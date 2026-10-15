@@ -44,6 +44,7 @@ def test_suricata_argv_enables_ot_parsers(tmp_path: Path) -> None:
     argv = tools.suricata_argv(tmp_path / "a.pcap")
     assert "app-layer.protocols.modbus.enabled=yes" in argv
     assert "app-layer.protocols.enip.enabled=yes" in argv
+    assert "outputs.1.eve-log.community-id=true" in argv
     assert argv[argv.index("-k") + 1] == "none"
     assert argv[argv.index("-S") + 1] == tools.SURICATA_RULES
 

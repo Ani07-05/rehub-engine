@@ -10,6 +10,7 @@ SURICATA_RULES = "/opt/rehub/suricata/rehub.rules"
 SURICATA_SETTINGS = {
     "app-layer.protocols.modbus.enabled": "yes",
     "app-layer.protocols.enip.enabled": "yes",
+    "outputs.1.eve-log.community-id": "true",
 }
 TSHARK_FIELDS = (
     "frame.number",
