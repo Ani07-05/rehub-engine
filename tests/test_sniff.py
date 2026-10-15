@@ -116,3 +116,38 @@ def test_nul_bytes_not_text(tmp_path: Path) -> None:
     path = tmp_path / "x.csv"
     path.write_bytes(b"ip,mac\n\x00\x00\x00")
     assert sniff(path) == EvidenceKind.UNKNOWN
+
+
+FIXTURE_DIR = Path(__file__).resolve().parent.parent / "fixtures" / "ot-demo"
+
+
+@pytest.mark.parametrize(
+    ("rel", "kind"),
+    [
+        ("zeek/conn.log", EvidenceKind.ZEEK_LOG),
+        ("zeek/modbus.log", EvidenceKind.ZEEK_LOG),
+        ("zeek/s7comm.log", EvidenceKind.ZEEK_LOG),
+        ("suricata/eve.json", EvidenceKind.SURICATA_EVE),
+    ],
+)
+def test_real_tool_output(rel: str, kind: EvidenceKind) -> None:
+    assert sniff(FIXTURE_DIR / rel) == kind
+
+
+def test_real_pcap() -> None:
+    assert sniff(FIXTURE_DIR.parent / "ot-demo.pcap") == EvidenceKind.PCAP
+
+
+def test_utf8_bom_xml_and_csv(tmp_path: Path) -> None:
+    xml = tmp_path / "p.xml"
+    xml.write_bytes(b"\xef\xbb\xbf" + L5X.encode())
+    assert sniff(xml) == EvidenceKind.PLC_L5X
+    csv_file = tmp_path / "hist.csv"
+    csv_file.write_bytes(b"\xef\xbb\xbftimestamp,tag,value\n1,T1,5\n")
+    assert sniff(csv_file) == EvidenceKind.CSV_HISTORIAN
+
+
+def test_utf16_csv(tmp_path: Path) -> None:
+    path = tmp_path / "hist.csv"
+    path.write_bytes("timestamp,tag,value\r\n1,T1,5\r\n".encode("utf-16"))
+    assert sniff(path) == EvidenceKind.CSV_HISTORIAN
