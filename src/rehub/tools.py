@@ -27,6 +27,10 @@ TSHARK_FIELDS = (
     "udp.dstport",
     "_ws.col.protocol",
     "_ws.col.info",
+    "eth.src",
+    "eth.dst",
+    "arp.src.hw_mac",
+    "arp.src.proto_ipv4",
 )
 DEFAULT_TIMEOUT = 1800.0
 STDERR_TAIL = 2000

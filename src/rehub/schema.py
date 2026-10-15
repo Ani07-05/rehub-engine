@@ -23,6 +23,7 @@ class EventKind(StrEnum):
     ALERT = "alert"
     PACKET = "packet"
     LOGIC = "logic"
+    HEALTH = "health"
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +34,8 @@ class Event:
     evidence_id: str
     src: str | None = None
     dst: str | None = None
+    sport: int | None = None
+    dport: int | None = None
     proto: str | None = None
     flow_key: str | None = None
     severity: str | None = None
