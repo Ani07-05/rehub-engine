@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <fileHeader companyName="Demo" productName="Demo" productVersion="1" creationDateTime="2026-01-01T00:00:00"/>
+  <contentHeader name="PumpStation">
+    <coordinateInfo><fbd><scaling x="1" y="1"/></fbd><ld><scaling x="1" y="1"/></ld><sfc><scaling x="1" y="1"/></sfc></coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="PumpControl" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="Pressure" address="%IW0"><type><INT/></type></variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST><xhtml:p><![CDATA[
+IF Pressure > Setpoint THEN
+    ReliefValve := TRUE;
+ELSE
+    ReliefValve := FALSE;
+END_IF;
+PumpRun := PumpSpeed > 0 AND PumpSpeed <= SpeedLimit;
+Runtime := Runtime + 1;
+IF Runtime > 4000000 THEN
+    PumpRun := FALSE;
+END_IF;
+]]></xhtml:p></ST>
+        </body>
+      </pou>
+      <pou name="Panel" pouType="program">
+        <interface/>
+        <body><LD/></body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="Config">
+        <resource name="Res">
+          <globalVars>
+            <variable name="PumpSpeed" address="%MW0"><type><INT/></type></variable>
+            <variable name="SpeedLimit" address="%MW1"><type><INT/></type><initialValue><simpleValue value="1500"/></initialValue></variable>
+            <variable name="Setpoint" address="%MW10"><type><INT/></type><documentation><xhtml:p>pressure setpoint kPa</xhtml:p></documentation></variable>
+            <variable name="ReliefValve" address="%QX0.1"><type><BOOL/></type></variable>
+            <variable name="PumpRun" address="%QX0.0"><type><BOOL/></type></variable>
+            <variable name="Runtime"><type><DINT/></type></variable>
+            <variable name="Recipe" address="%MW30"><type><array><dimension lower="0" upper="3"/><baseType><REAL/></baseType></array></type></variable>
+          </globalVars>
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="32.00" TargetName="TankCtl" TargetType="Controller">
+<Controller Use="Target" Name="TankCtl" ProcessorType="1769-L33ER" MajorRev="32">
+<Modules>
+<Module Name="Local" CatalogNumber="1769-L33ER" Vendor="1" ProductType="14" ParentModule="Local" ParentModPortId="1">
+<Ports><Port Id="1" Address="0" Type="Compact"/><Port Id="2" Type="Ethernet" Address="10.0.0.40"/></Ports>
+</Module>
+<Module Name="Drive1" CatalogNumber="PF525" ParentModule="Local" ParentModPortId="2">
+<Ports><Port Id="2" Type="Ethernet" Address="10.0.0.41"/></Ports>
+</Module>
+</Modules>
+<Tags>
+<Tag Name="StartPB" TagType="Base" DataType="BOOL" Radix="Decimal"><Description><![CDATA[Start button]]></Description></Tag>
+<Tag Name="Pump" TagType="Base" DataType="BOOL" Radix="Decimal"/>
+<Tag Name="PumpAlias" TagType="Alias" AliasFor="Pump"/>
+<Tag Name="Level" TagType="Base" DataType="DINT" Radix="Decimal"/>
+<Tag Name="Counter" TagType="Base" DataType="DINT" Radix="Decimal"/>
+<Tag Name="Drain" TagType="Base" DataType="BOOL" Radix="Decimal"/>
+<Tag Name="SpareTag" TagType="Base" DataType="DINT" Radix="Decimal"/>
+</Tags>
+<Programs>
+<Program Name="MainProgram" MainRoutineName="MainRoutine">
+<Tags><Tag Name="LocalTimer" TagType="Base" DataType="TIMER"/></Tags>
+<Routines>
+<Routine Name="MainRoutine" Type="RLL">
+<RLLContent>
+<Rung Number="0" Type="N"><Text><![CDATA[XIC(StartPB)OTE(Pump);]]></Text></Rung>
+<Rung Number="1" Type="N"><Text><![CDATA[XIC(Pump)ADD(Counter,1,Counter);]]></Text></Rung>
+<Rung Number="2" Type="N"><Text><![CDATA[GRT(Counter,900000)OTE(Drain);]]></Text></Rung>
+<Rung Number="3" Type="N"><Text><![CDATA[XIC(StartPB)OTE(PumpAlias);]]></Text></Rung>
+</RLLContent>
+</Routine>
+<Routine Name="StCode" Type="ST">
+<STContent>
+<Line Number="0"><![CDATA[IF Level > 100 THEN]]></Line>
+<Line Number="1"><![CDATA[  Pump := 1;]]></Line>
+<Line Number="2"><![CDATA[END_IF;]]></Line>
+</STContent>
+</Routine>
+</Routines>
+</Program>
+</Programs>
+</Controller>
+</RSLogix5000Content>
