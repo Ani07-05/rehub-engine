@@ -1,6 +1,6 @@
 import hashlib
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 
 from rehub.model import (
     MAC_ARP,
@@ -15,6 +15,8 @@ from rehub.model import (
     Source,
 )
 from rehub.oui import OuiTable, is_locally_administered
+from rehub.plc.link import modbus_impacts
+from rehub.plc.model import PlcProject
 from rehub.schema import Event, EventKind
 
 OT_PORTS = {
@@ -34,6 +36,7 @@ S7_CONTROL = {"stop": "high", "download": "high", "plc control": "high", "upload
 REDUNDANCY_MAC_PREFIXES = ("00:00:5e:00:01", "00:00:5e:00:02", "00:00:0c:07:ac", "00:00:0c:9f:f")
 MERGE_WINDOW = 1.0
 REF_CAP = 25
+MODBUS_REGISTER_FUNCS = frozenset({"6", "16", "22", "23"})
 EXPECTED_TOOLS = ("zeek", "suricata", "tshark")
 FLOW_PRIORITY = {"zeek": 0, "suricata": 1, "tshark": 2}
 
@@ -296,28 +299,40 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
     detail = _detail_index(events)
     found: dict[tuple[object, ...], Detection] = {}
     for ev in events:
-        if ev.kind == EventKind.ALERT:
+        attack: list[str] = []
+        extra: dict[str, str]
+        if ev.kind == EventKind.LOGIC:
+            rule = f"plc:{ev.attrs.get('rule', 'logic')}"
+            title, severity = f"PLC logic: {ev.summary}", ev.severity
+            extra = {k: ev.attrs[k] for k in ("project", "detail", "variable") if k in ev.attrs}
+        elif ev.kind == EventKind.ALERT:
             sid = ev.attrs.get("sid")
             rule = f"suricata:{sid}" if ev.tool == "suricata" and sid else f"{ev.tool}:{ev.proto}"
             title, severity = ev.summary, ev.severity
-            attack: list[str] = []
             extra = {
                 k: v
                 for k, v in ev.attrs.items()
                 if ev.tool == "suricata"
-                and (k.startswith("modbus.request.write") or k == "category")
+                and (
+                    k.startswith("modbus.request.write")
+                    or k in ("category", "modbus.request.function_raw")
+                )
             }
         else:
             control = _control(ev)
             if control is None:
                 continue
             rule, title, severity, attack = control
-            extra = {}
+            extra = {"func": ev.attrs["func"]} if "func" in ev.attrs else {}
             d = detail.get((ev.flow_key, ev.attrs.get("tid", ""), ev.attrs.get("func", "")))
             if d:
-                extra = {
-                    k: d.attrs[k] for k in ("address", "quantity", "request_values") if k in d.attrs
-                }
+                extra.update(
+                    {
+                        k: d.attrs[k]
+                        for k in ("address", "quantity", "request_values")
+                        if k in d.attrs
+                    }
+                )
         key = _group_key(ev, rule, title)
         det = found.get(key)
         if det is None:
@@ -340,6 +355,42 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
         found.values(),
         key=lambda d: (-SEVERITY_RANK.get(d.severity or "", 0), d.first_ts or 0.0, d.id),
     )
+
+
+def _write_target(det: Detection) -> tuple[int, int, str] | None:
+    func = det.attrs.get("func", "")
+    raw = det.attrs.get("modbus.request.function_raw", "")
+    is_register = "REGISTER" in func or raw in MODBUS_REGISTER_FUNCS
+    address = det.attrs.get("address") or det.attrs.get("modbus.request.write.address", "")
+    if not is_register or not address.isdigit():
+        return None
+    quantity = det.attrs.get("quantity") or det.attrs.get("modbus.request.write.quantity") or "1"
+    values = det.attrs.get("request_values") or det.attrs.get("modbus.request.write.data", "")
+    return int(address), int(quantity) if quantity.isdigit() else 1, values
+
+
+def _link_plc(inv: Investigation, projects: Sequence[PlcProject]) -> None:
+    for project in projects:
+        if not project.controller_ips:
+            inv.caveats.append(
+                f"PLC project {project.name} has no controller IP, so it was not linked to any "
+                "network asset. Provide the controller IP."
+            )
+            continue
+        for ip in sorted(project.controller_ips):
+            if ip in inv.assets:
+                inv.assets[ip].plc_projects.add(project.name)
+            else:
+                inv.caveats.append(
+                    f"PLC project {project.name} is assigned to {ip}, which is not seen in the "
+                    "network evidence."
+                )
+        for det in inv.detections:
+            target = _write_target(det)
+            if target is None or det.dst not in project.controller_ips:
+                continue
+            address, quantity, values = target
+            det.plc.extend(modbus_impacts(project, address, quantity, values))
 
 
 def _build_arp_conflicts(inv: Investigation, events: list[Event]) -> None:
@@ -391,13 +442,18 @@ def _build_caveats(inv: Investigation, events: list[Event]) -> None:
             )
 
 
-def correlate(events: Iterable[Event], oui: OuiTable | None = None) -> Investigation:
+def correlate(
+    events: Iterable[Event],
+    oui: OuiTable | None = None,
+    plc: Sequence[PlcProject] = (),
+) -> Investigation:
     items = list(events)
     inv = Investigation(event_count=len(items))
     _build_flows(inv, items)
     _build_assets(inv, items, oui or OuiTable.from_env())
     _build_detections(inv, items)
     _build_arp_conflicts(inv, items)
+    _link_plc(inv, plc)
     _build_caveats(inv, items)
     inv.assets = dict(sorted(inv.assets.items()))
     inv.flows = dict(sorted(inv.flows.items(), key=lambda kv: (kv[1].first_ts or 0.0, kv[0])))

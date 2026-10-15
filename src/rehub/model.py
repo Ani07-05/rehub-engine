@@ -21,6 +21,20 @@ class Source:
 
 
 @dataclass(slots=True)
+class PlcImpact:
+    project: str
+    variable: str
+    address: str
+    dtype: str
+    comment: str
+    readers: list[str]
+    drives: list[str]
+    new_values: str
+    assumption: str
+    size_known: bool = True
+
+
+@dataclass(slots=True)
 class Asset:
     id: str
     ips: set[str] = field(default_factory=set)
@@ -31,6 +45,7 @@ class Asset:
     first_ts: float | None = None
     last_ts: float | None = None
     tools: set[str] = field(default_factory=set)
+    plc_projects: set[str] = field(default_factory=set)
 
     @property
     def kind(self) -> str:
@@ -72,6 +87,7 @@ class Detection:
     count: int = 0
     sources: list[Source] = field(default_factory=list)
     attack: list[str] = field(default_factory=list)
+    plc: list[PlcImpact] = field(default_factory=list)
     attrs: dict[str, str] = field(default_factory=dict)
     refs: list[EvidenceRef] = field(default_factory=list)
 

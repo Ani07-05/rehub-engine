@@ -9,6 +9,8 @@ from rehub.adapters.zeek import parse_zeek
 from rehub.correlate import ATTACK_NOTE, correlate
 from rehub.model import MAC_ARP, MAC_INFERRED, Investigation
 from rehub.oui import OuiTable
+from rehub.plc.analyze import project_events
+from rehub.plc.formats import load_st
 from rehub.schema import Event, EventKind
 
 DEMO = Path(__file__).resolve().parent.parent / "fixtures" / "ot-demo"
@@ -229,3 +231,58 @@ def test_unknown_mac_vendor_none() -> None:
 def test_empty_input() -> None:
     inv = correlate([])
     assert inv.flows == {} and inv.assets == {} and inv.detections == []
+
+
+PLC_DIR = DEMO.parent / "plc"
+
+
+def plc_inv(ip: str | None = PLC) -> Investigation:
+    project = load_st(PLC_DIR / "pump.st", "pump.st", "ev-plc", ip)
+    return correlate(demo_events() + list(project_events(project)), plc=[project])
+
+
+def test_modbus_register_write_linked_to_plc_variable() -> None:
+    inv = plc_inv()
+    single = next(d for d in inv.detections if d.title == "Modbus WRITE_SINGLE_REGISTER")
+    [impact] = single.plc
+    assert (impact.variable, impact.address, impact.dtype) == ("Setpoint", "%MW10", "INT")
+    assert impact.drives == ["ReliefValve"]
+    assert impact.new_values == "[1000]"
+    multi = next(d for d in inv.detections if d.title == "Modbus WRITE_MULTIPLE_REGISTERS")
+    assert [i.variable for i in multi.plc] == ["PumpSpeed", "SpeedLimit"]
+
+
+def test_plc_link_does_not_leak_to_other_controllers() -> None:
+    inv = plc_inv()
+    stop = next(d for d in inv.detections if d.title == "S7comm PLC Stop")
+    assert stop.plc == []
+    other = plc_inv(S7)
+    assert all(d.plc == [] for d in other.detections if d.title.startswith("Modbus"))
+    assert other.assets[S7].plc_projects == {"pump"}
+
+
+def test_static_plc_findings_become_uncorroborated_detections() -> None:
+    inv = plc_inv()
+    gated = next(d for d in inv.detections if d.title.startswith("PLC logic: Output PumpRun"))
+    assert gated.tools == {"plc"}
+    assert not gated.corroborated
+    assert gated.severity == "medium"
+    assert gated.dst == PLC
+    assert gated.refs[0].ref == "pump.st:PumpControl:27"
+    assert inv.assets[PLC].plc_projects == {"pump"}
+
+
+def test_plc_without_ip_or_unseen_ip_adds_caveats() -> None:
+    no_ip = plc_inv(None)
+    assert any("no controller IP" in c for c in no_ip.caveats)
+    assert all(d.plc == [] for d in no_ip.detections)
+    unseen = plc_inv("10.9.9.9")
+    assert any("10.9.9.9" in c and "not seen" in c for c in unseen.caveats)
+
+
+def test_suricata_only_register_write_still_links() -> None:
+    project = load_st(PLC_DIR / "pump.st", "pump.st", "ev-plc", PLC)
+    events = demo_events(("suricata",))
+    inv = correlate(events, plc=[project])
+    single = next(d for d in inv.detections if "single register" in d.title)
+    assert [i.variable for i in single.plc] == ["Setpoint"]
