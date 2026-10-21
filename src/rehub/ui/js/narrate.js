@@ -212,3 +212,27 @@ export function confidenceText(d) {
     ? `Confirmed by two independent tools (${toolList(d.tools)}).`
     : `Reported by one tool only (${toolList(d.tools)}); treat as unconfirmed.`;
 }
+
+const CHAIN = [
+  { id: "storage", label: "Storage", ids: ["data", "disk"] },
+  { id: "zeek", label: "Zeek", ids: ["zeek", "zeek-ics", "selftest-zeek"] },
+  { id: "suricata", label: "Suricata", ids: ["suricata", "selftest-suricata"] },
+  { id: "tshark", label: "tshark", ids: ["tshark", "selftest-tshark"] },
+];
+const RANK_STATUS = { ok: 0, warn: 1, fail: 2 };
+
+export function serviceChain(checks) {
+  return CHAIN.map((group) => {
+    const members = checks.filter((c) => group.ids.includes(c.id));
+    if (!members.length) return { id: group.id, label: group.label, status: "fail", sub: "No result", problems: [{ label: group.label, detail: "The check did not run.", fix: "" }] };
+    const status = members.reduce((worst, c) => (RANK_STATUS[c.status] > RANK_STATUS[worst] ? c.status : worst), "ok");
+    const problems = members.filter((c) => c.status !== "ok").map((c) => ({ label: c.label, detail: c.detail, fix: c.fix }));
+    const lead = members.find((c) => c.id === group.id) || members.find((c) => c.id === "disk") || members[0];
+    const sub = status === "ok" ? lead.detail.replace(/^version /, "") : status === "warn" ? "Needs attention" : "Not working";
+    return { id: group.id, label: group.label, status, sub, problems };
+  });
+}
+
+export function chainStatus(chain) {
+  return chain.reduce((worst, n) => (RANK_STATUS[n.status] > RANK_STATUS[worst] ? n.status : worst), "ok");
+}

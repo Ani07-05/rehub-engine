@@ -22,7 +22,7 @@ docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g
   rehub --data /data analyze /in/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20
 ```
 
-Or run the web UI. It prints a sign-in link containing an access token (`docker logs <container>`, or `rehub token`); the first visit trades the token for a cookie. Without the token, visitors only see a sign-in page.
+Or run the web UI and open http://localhost:8080. It opens on a REHUB screen that checks Zeek, Suricata, tshark and storage, then lets you Enter. Sign-in is off by default because it is local only; set `REHUB_TOKEN` (or start with `--auth`) to require an access token, in which case it prints a sign-in link.
 
 ```sh
 docker run --rm -p 127.0.0.1:8080:8080 -e REHUB_HOST=0.0.0.0 --read-only --tmpfs /tmp \

@@ -2,6 +2,7 @@ import { h, mount } from "./dom.js";
 import { api } from "./api.js";
 import { brandMark } from "./icons.js";
 import { renderHome } from "./views/home.js";
+import { renderSplash } from "./views/splash.js";
 import { renderSummary } from "./views/summary.js";
 import { renderInvestigator } from "./views/investigate.js";
 import { fmtTime } from "./dom.js";
@@ -20,7 +21,7 @@ function navigate(hash) {
 
 function topbar(record, mode) {
   const kids = [
-    h("a", { class: "brand", href: "#/" }, brandMark(), "ReHub"),
+    h("a", { class: "brand", href: "#/new" }, brandMark(), "ReHub"),
   ];
   if (record) {
     kids.push(h("span", { class: "case" }, `Case ${record.id.slice(0, 6)}, ${fmtTime(Date.parse(record.created) / 1000)}`));
@@ -36,7 +37,7 @@ function topbar(record, mode) {
   } else {
     kids.push(h("span", { class: "grow" }));
   }
-  kids.push(h("a", { class: record ? "btn" : "btn ghost", href: "#/" }, "New investigation"));
+  kids.push(h("a", { class: record ? "btn" : "btn ghost", href: "#/new" }, "New investigation"));
   if (authOn) {
     kids.push(h("button", { class: "btn ghost", type: "button", onclick: async () => { try { await api.logout(); } finally { location.assign("/"); } } }, "Sign out"));
   }
@@ -44,7 +45,7 @@ function topbar(record, mode) {
 }
 
 function failure(err) {
-  mount(app, h("div", { class: "col stack" }, h("h1", {}, "Something went wrong"), h("div", { class: "callout err" }, err.message), h("p", {}, h("a", { class: "btn", href: "#/" }, "Back to start"))));
+  mount(app, h("div", { class: "col stack" }, h("h1", {}, "Something went wrong"), h("div", { class: "callout err" }, err.message), h("p", {}, h("a", { class: "btn", href: "#/new" }, "Back to start"))));
 }
 
 async function loadRecord(id) {
@@ -68,7 +69,7 @@ async function showInvestigation(id, tab, detId, query, token) {
         { class: "col stack" },
         h("h1", {}, stage === "failed" ? "This investigation did not finish" : "This investigation is not ready"),
         h("p", { class: "muted" }, stage === "failed" ? (record.status.detail || "No reason was recorded.") : `Current state: ${stage}.`),
-        h("a", { class: "btn", href: "#/" }, "Back to start"),
+        h("a", { class: "btn", href: "#/new" }, "Back to start"),
       ),
     );
   }
@@ -88,6 +89,9 @@ async function route() {
   document.title = "ReHub";
   try {
     if (!parts.length) {
+      mount(bar);
+      renderSplash(app, () => navigate("#/new"));
+    } else if (parts[0] === "new") {
       topbar(null);
       renderHome(app, navigate);
     } else if (parts[0] === "i" && /^[0-9a-f]{12}$/.test(parts[1] || "")) {

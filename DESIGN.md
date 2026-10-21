@@ -34,6 +34,12 @@ typography:
     fontWeight: 500
     lineHeight: 1.45
     letterSpacing: "-0.01em"
+  wordmark:
+    fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "clamp(4.5rem, 17vw, 12rem)"
+    fontWeight: 700
+    lineHeight: 0.9
+    letterSpacing: "-0.04em"
   title:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "1.125rem"
@@ -144,6 +150,7 @@ A restrained, near-monochrome palette. Colour is a semantic signal, never decora
 A fixed rem scale (no fluid type) with a ~1.2 step: 0.75 / 0.8125 / 0.9375 / 1.125 / 1.375 / 1.75rem. Body measure stays at or under 62ch.
 
 ### Hierarchy
+- **Wordmark** (700, clamp 4.5 to 12rem, -0.04em): the opening screen only. The one fluid, oversized type in the system; nowhere else breaks the fixed scale.
 - **Headline** (600, 1.75rem, -0.02em): page statements such as "What happened".
 - **Answer** (500, 1.375rem, 1.45): the plain-language paragraphs. The largest text on screen, because the answer is the point.
 - **Title** (600, 1.125rem): section headings and finding titles.
@@ -194,6 +201,9 @@ Outlined wrapper, hairline row dividers, sticky-free, horizontally scrollable in
 
 ### Code and evidence viewers
 Gutter-and-line grid in monospace inside a hairline box; the referenced line gets a faint white tint. Evidence is only ever shown as escaped text or offered as a download.
+
+### Opening screen (service chain)
+A huge REHUB wordmark, then one line left to right: Storage, Zeek, Suricata, tshark, Enter. Each service is an outlined box with a drawn mark: dashed and pulsing while checking, a ring with a check when ready, a square (needs attention) or triangle (not working) with its word otherwise. Thin links between boxes fill white as each service passes. The real results arrive together and are revealed in order, 260ms apart. Enter is the last node and the focused default; if anything fails it reads "Enter anyway" and the reasons appear below. Reduced motion shows all results at once.
 
 ### Flow map
 SVG, clients on the left and controllers on the right, curved hairline edges. A dashed coloured edge carries a finding. Nodes are keyboard focusable buttons.

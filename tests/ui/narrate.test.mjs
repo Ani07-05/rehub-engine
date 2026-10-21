@@ -103,3 +103,43 @@ test("confidence wording distinguishes corroboration from static review hints", 
   assert.match(confidenceText(single), /one tool only \(Suricata\); treat as unconfirmed/);
   assert.equal(reportFileName(record), `rehub-report-${record.id}.html`);
 });
+
+const okChecks = () => [
+  { id: "data", label: "Data folder", status: "ok", detail: "/data is writable", fix: "" },
+  { id: "disk", label: "Free disk space", status: "ok", detail: "777.4 GB free", fix: "" },
+  { id: "zeek", label: "Zeek", status: "ok", detail: "version 8.0.10", fix: "" },
+  { id: "zeek-ics", label: "Zeek industrial protocol plugins", status: "ok", detail: "S7comm and EtherNet/IP available", fix: "" },
+  { id: "suricata", label: "Suricata", status: "ok", detail: "version 8.0.7", fix: "" },
+  { id: "tshark", label: "tshark", status: "ok", detail: "version 4.4.19", fix: "" },
+  { id: "selftest-zeek", label: "Zeek reads a sample capture", status: "ok", detail: "found the Modbus write", fix: "" },
+  { id: "selftest-suricata", label: "Suricata raises an alert", status: "ok", detail: "rule fired", fix: "" },
+  { id: "selftest-tshark", label: "tshark lists packets", status: "ok", detail: "listed", fix: "" },
+];
+
+test("service chain runs left to right and shows versions when healthy", async () => {
+  const { serviceChain, chainStatus } = await import("../../src/rehub/ui/js/narrate.js");
+  const chain = serviceChain(okChecks());
+  assert.deepEqual(chain.map((n) => n.label), ["Storage", "Zeek", "Suricata", "tshark"]);
+  assert.deepEqual(chain.map((n) => n.sub), ["777.4 GB free", "8.0.10", "8.0.7", "4.4.19"]);
+  assert.equal(chainStatus(chain), "ok");
+});
+
+test("a failing self test marks only its service and keeps the reason", async () => {
+  const { serviceChain, chainStatus } = await import("../../src/rehub/ui/js/narrate.js");
+  const checks = okChecks();
+  checks.find((c) => c.id === "selftest-suricata").status = "fail";
+  checks.find((c) => c.id === "selftest-suricata").detail = "no alert fired";
+  checks.find((c) => c.id === "zeek-ics").status = "warn";
+  const chain = serviceChain(checks);
+  assert.deepEqual(chain.map((n) => n.status), ["ok", "warn", "fail", "ok"]);
+  assert.equal(chain[2].sub, "Not working");
+  assert.equal(chain[2].problems[0].detail, "no alert fired");
+  assert.equal(chain[1].sub, "Needs attention");
+  assert.equal(chainStatus(chain), "fail");
+});
+
+test("missing results never look healthy", async () => {
+  const { serviceChain } = await import("../../src/rehub/ui/js/narrate.js");
+  const chain = serviceChain([]);
+  assert.ok(chain.every((n) => n.status === "fail"));
+});

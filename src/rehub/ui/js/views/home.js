@@ -1,6 +1,6 @@
 import { h, mount, fmtBytes, plural, fmtTime } from "../dom.js";
 import { api } from "../api.js";
-import { systemCheck } from "./health.js";
+import { lastProblems } from "./splash.js";
 
 const PLC_FILE = /\.(st|xml|l5x)$/i;
 const IP_LIKE = /^[0-9a-f:.]{3,45}$/i;
@@ -63,7 +63,7 @@ async function runAnalysis(root, navigate) {
         { class: "col stack" },
         h("h1", {}, "That did not finish"),
         h("div", { class: "callout err" }, err.message),
-        h("p", {}, h("button", { class: "btn primary", type: "button", onclick: () => navigate("#/") }, "Back to start")),
+        h("p", {}, h("button", { class: "btn primary", type: "button", onclick: () => navigate("#/new") }, "Back to start")),
       ),
     );
   }
@@ -178,7 +178,11 @@ export function renderHome(root, navigate) {
   for (const ev of ["dragenter", "dragover"]) drop.addEventListener(ev, (e) => (e.preventDefault(), drop.classList.add("over")));
   for (const ev of ["dragleave", "drop"]) drop.addEventListener(ev, (e) => (e.preventDefault(), drop.classList.remove("over")));
   drop.addEventListener("drop", (e) => add([...e.dataTransfer.files]));
-  mount(root, h("div", { class: "col stack-lg" }, systemCheck(), drop, area, recent));
+  const trouble = lastProblems();
+  const banner = trouble.length
+    ? h("div", { class: "callout err", role: "alert" }, h("b", {}, "Some tools are not working: "), trouble.map((n) => `${n.label} (${n.sub.toLowerCase()})`).join(", "), ". Analysis may fail. ", h("a", { href: "#/" }, "Run the checks again"))
+    : null;
+  mount(root, h("div", { class: "col stack-lg" }, banner, drop, area, recent));
   draw();
   loadRecent();
 }
