@@ -32,7 +32,7 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 2. (done) Report: Report tab, print to PDF, and a standalone no-script HTML download with hashes, caveats and the ATT&CK note, built in the browser from the same logic as the Summary.
 5. Hardened compose (internal network plus gateway so the engine has no egress, `cap_drop: ALL`, read-only root, memory and pid limits), `install.sh`, publish image to GHCR.
 6. Emerging Threats rules bundle after the license check.
-7. Test on real ICS pcaps. The only pcap so far is synthetic.
+7. (partly done) Real-capture testing: `scripts/real-pcap-smoke.sh` downloads five small public ICS captures (Modbus, S7, DNP3) and runs them through the image. It found and fixed Modbus transaction-id reuse merging distinct commands. Still to do: a large capture (tens of MB or more) for time and memory.
 8. Docs, demo script.
 
 ## Security model of the web UI

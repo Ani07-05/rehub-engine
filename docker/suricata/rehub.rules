@@ -3,3 +3,7 @@ alert modbus any any -> any any (msg:"REHUB Modbus write multiple registers"; mo
 alert tcp any any -> any 102 (msg:"REHUB S7comm PLC stop"; flow:to_server,established; content:"|32 01|"; offset:7; depth:2; content:"|29|"; offset:17; depth:1; sid:9000003; rev:1;)
 alert tcp any any -> any 102 (msg:"REHUB S7comm request download"; flow:to_server,established; content:"|32 01|"; offset:7; depth:2; content:"|1a|"; offset:17; depth:1; sid:9000004; rev:1;)
 alert enip any any -> any any (msg:"REHUB ENIP list identity"; enip_command:99; sid:9000005; rev:1;)
+alert modbus any any -> any any (msg:"REHUB Modbus write single coil"; modbus: function 5; sid:9000006; rev:1;)
+alert modbus any any -> any any (msg:"REHUB Modbus write multiple coils"; modbus: function 15; sid:9000007; rev:1;)
+alert modbus any any -> any any (msg:"REHUB Modbus mask write register"; modbus: function 22; sid:9000008; rev:1;)
+alert modbus any any -> any any (msg:"REHUB Modbus read write multiple registers"; modbus: function 23; sid:9000009; rev:1;)
