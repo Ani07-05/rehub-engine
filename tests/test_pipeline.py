@@ -242,3 +242,21 @@ def test_log_only_upload_leaves_tools_idle(tmp_path: Path) -> None:
     )
     status = read_status(tmp_path / "data", rec.id)
     assert status is not None and status["tools"] == {}
+
+
+def test_listing_reports_done_as_soon_as_the_record_exists(tmp_path: Path) -> None:
+    rec, _ = run(tmp_path, [PCAP])
+    status_path = tmp_path / "data" / "investigations" / rec.id / "status.json"
+    status_path.write_text('{"stage": "correlate", "detail": "", "tools": {}, "updated": ""}')
+    [item] = pipeline.list_investigations(tmp_path / "data")
+    assert item["id"] == rec.id and item["stage"] == "done"
+
+
+def test_listing_still_shows_running_cases_before_the_record_exists(tmp_path: Path) -> None:
+    inv_dir = tmp_path / "data" / "investigations" / "abcdefabcdef"
+    inv_dir.mkdir(parents=True)
+    (inv_dir / "status.json").write_text(
+        '{"stage": "analyze", "detail": "", "tools": {}, "updated": ""}'
+    )
+    [item] = pipeline.list_investigations(tmp_path / "data")
+    assert item["stage"] == "analyze"

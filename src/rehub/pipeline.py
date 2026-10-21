@@ -148,7 +148,8 @@ def list_investigations(data_dir: Path) -> list[dict[str, Any]]:
         summary: dict[str, Any] = (
             json.loads(summary_path.read_text()) if summary_path.is_file() else {"id": inv_dir.name}
         )
-        items.append({**summary, "stage": status["stage"], "updated": status.get("updated", "")})
+        stage = "done" if summary_path.is_file() else status["stage"]
+        items.append({**summary, "stage": stage, "updated": status.get("updated", "")})
     return sorted(items, key=lambda i: str(i.get("created") or i.get("updated")), reverse=True)
 
 
