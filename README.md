@@ -23,13 +23,23 @@ docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g
   rehub --data /data analyze /in/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20
 ```
 
-Or run the web UI and open http://localhost:8080. It opens on a REHUB screen (or use "Try the demo" on the start page for a built-in case) that checks Zeek, Suricata, tshark and storage, then lets you Enter. Sign-in is off by default because it is local only; set `REHUB_TOKEN` (or start with `--auth`) to require an access token, in which case it prints a sign-in link.
+## Install
+
+Needs Docker (Desktop or Engine) with Compose v2. From a checkout:
 
 ```sh
-docker run --rm -p 127.0.0.1:8080:8080 -e REHUB_HOST=0.0.0.0 --read-only --tmpfs /tmp \
-  --cap-drop ALL --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
-  -v "$PWD/data:/data" rehub:dev rehub --data /data serve
+./scripts/install.sh --local      # builds the image from source
+./scripts/install.sh              # pulls the published image instead
 ```
+
+or, once the repository is public: `curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh`. Read the script first; it is short.
+
+What it sets up, from `compose.yml`:
+
+- an **engine** container that parses the evidence, on a network with no route out (it cannot reach the internet or resolve names), with a read-only root, all capabilities dropped, no-new-privileges, and memory and process limits;
+- a tiny **gateway** container that forwards port 8080 to the engine and publishes it on `127.0.0.1` only.
+
+The installer then runs the doctor (a self-test of Zeek, Suricata and tshark on a built-in capture), prints the address and opens it. `install.sh --update`, `--status` and `--uninstall [--purge]` do what they say. Sign-in is off by default because ReHub is local only; `install.sh --auth` generates a token and prints a sign-in link. The page opens on a REHUB screen that checks the services, then lets you Enter; "Try the demo" on the start page analyzes a built-in case.
 
 Check that everything works with `rehub doctor`: it runs Zeek, Suricata and tshark on a built-in sample capture and verifies the expected Modbus write is detected. The web UI shows the same check on its start page.
 
@@ -58,6 +68,7 @@ src/rehub/
   adapters/              tool output to common Event schema
   communityid.py         Community ID v1
   pipeline.py cli.py     upload to investigation, persistence, CLI
+  gateway.py             tiny TCP forwarder used by the compose stack
   api.py drill.py        local HTTP API and evidence drill-down
   ui/                    web UI, plain HTML/CSS/JS, no build step
   correlate.py model.py  assets, flows, detections

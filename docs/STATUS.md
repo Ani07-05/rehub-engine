@@ -30,7 +30,7 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 
 1. (done) pipeline runner, API, UI (`rehub serve`). Design context lives in `PRODUCT.md` and `DESIGN.md`; the surface brief and direction contract are in `.impeccable/surfaces/`.
 2. (done) Report: Report tab, print to PDF, and a standalone no-script HTML download with hashes, caveats and the ATT&CK note, built in the browser from the same logic as the Summary.
-5. Hardened compose (internal network plus gateway so the engine has no egress, `cap_drop: ALL`, read-only root, memory and pid limits), `install.sh`, publish image to GHCR.
+5. (done, CI untested) `compose.yml` (engine on an internal-only network, gateway publishing 127.0.0.1, read-only, cap_drop ALL, limits), `scripts/install.sh`, `.github/workflows/ci.yml` (tests, then multi-arch image build on native runners and a merged GHCR manifest). The workflow has not run yet: it needs the repo pushed with Actions enabled, and `ghcr.io/ani07-05/rehub-engine` must be made public after the first publish. Pin actions to commit SHAs before release.
 6. Emerging Threats rules bundle after the license check.
 7. (partly done) Real-capture testing: `scripts/real-pcap-smoke.sh` downloads five small public ICS captures (Modbus, S7, DNP3) and runs them through the image. It found and fixed Modbus transaction-id reuse merging distinct commands. Still to do: a large capture (tens of MB or more) for time and memory.
 8. Docs, demo script.
