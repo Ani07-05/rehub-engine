@@ -1,0 +1,6 @@
+Oct  9 08:53:19 fw-ot01 kernel: ACCEPT IN=eth1 SRC=10.0.0.10 DST=10.0.0.20 PROTO=TCP DPT=502
+Oct  9 08:53:22 fw-ot01 kernel: ACCEPT IN=eth1 SRC=10.0.0.66 DST=10.0.0.20 PROTO=TCP DPT=502
+Oct  9 08:53:22 ews01 sshd[2211]: Accepted password for engineer from 10.0.0.66 port 40001 ssh2
+Oct  9 08:53:26 fw-ot01 kernel: ACCEPT IN=eth1 SRC=10.0.0.66 DST=10.0.0.30 PROTO=TCP DPT=102
+Oct  9 08:53:27 plc-s7-01 plc: CPU mode change RUN -> STOP
+Oct  9 08:53:40 hmi01 alarmd[310]: ALARM PumpStation Setpoint out of range (1000 kPa)

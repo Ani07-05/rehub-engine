@@ -1,0 +1,5 @@
+ip,mac,hostname,vendor,role,location
+10.0.0.10,00:1b:1b:00:00:10,HMI-01,Siemens,operator station,control room
+10.0.0.20,00:80:f4:00:00:20,PUMP-PLC,Schneider Electric,controller,pump house
+10.0.0.30,00:1b:1b:00:00:30,S7-1500-A,Siemens,controller,pump house
+10.0.0.40,00:00:bc:00:00:40,TANK-PLC,Rockwell Automation,controller,tank farm

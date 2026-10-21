@@ -26,7 +26,7 @@ Status: work in progress, aimed at Black Hat Arsenal. Engine, CLI, web UI, repor
 - **Honest limits.** Missing tools, capture loss, ambiguous hardware addresses and unparsed files are listed under "What we could not verify". ATT&CK for ICS techniques are candidates, never verdicts.
 - **Evidence you can defend.** Every file is fingerprinted (SHA-256), tool output names the capture it came from, and each detection links to the file, line and packets behind it. The report prints or downloads as one offline HTML file with no scripts.
 
-Inputs: pcap and pcapng, Zeek logs, Suricata `eve.json`, PLC Structured Text, PLCopen XML and Rockwell L5X, or a zip/tar of these. Other files are stored and listed as not analyzed.
+Inputs (one sample of each is in `samples/`): pcap and pcapng, Zeek logs, Suricata `eve.json`, PLC Structured Text, PLCopen XML and Rockwell L5X, or a zip/tar of these. Other files are stored and listed as not analyzed.
 
 ## Install
 
@@ -75,6 +75,7 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy
 docker build -f docker/Dockerfile -t rehub:dev .
 ./scripts/regen-fixtures.sh   # after changing tool output or the demo capture
 ./scripts/real-pcap-smoke.sh  # downloads five small public ICS captures and runs them
+./scripts/make-samples.sh     # rebuilds samples/ (one file of each evidence type)
 ```
 
 ```
@@ -91,6 +92,7 @@ src/rehub/
   ui/                    web UI: plain HTML, CSS and JS, no build step
 docker/ compose.yml      tool image and hardened stack
 fixtures/                synthetic OT capture, real tool output, PLC projects
+samples/                 one file of each evidence type to try uploading
 PRODUCT.md DESIGN.md     product context and design system
 ```
 

@@ -1,0 +1,157 @@
+{
+  "samples": [
+    {
+      "path": "capture/ot-demo.pcap",
+      "kind": "pcap",
+      "analyzed": true,
+      "note": "Packet capture. Runs Zeek, Suricata and tshark."
+    },
+    {
+      "path": "capture/ot-demo.pcapng",
+      "kind": "pcap",
+      "analyzed": true,
+      "note": "Same capture in pcapng format."
+    },
+    {
+      "path": "capture/ot-demo.pcap.gz",
+      "kind": "pcap",
+      "analyzed": true,
+      "note": "Same capture, gzip compressed; unpacked on upload."
+    },
+    {
+      "path": "zeek-tsv/conn.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek log in Zeek's default tab-separated format."
+    },
+    {
+      "path": "zeek-tsv/cotp.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek COTP log (S7 transport)."
+    },
+    {
+      "path": "zeek-tsv/modbus.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek Modbus log."
+    },
+    {
+      "path": "zeek-tsv/modbus_detailed.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek Modbus detail log (addresses and values)."
+    },
+    {
+      "path": "zeek-tsv/s7comm.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek S7comm log (includes the PLC Stop)."
+    },
+    {
+      "path": "zeek-json/conn.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek log in JSON format."
+    },
+    {
+      "path": "zeek-json/cotp.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek COTP log, JSON."
+    },
+    {
+      "path": "zeek-json/modbus.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek Modbus log, JSON."
+    },
+    {
+      "path": "zeek-json/modbus_detailed.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek Modbus detail log, JSON."
+    },
+    {
+      "path": "zeek-json/s7comm.log",
+      "kind": "zeek_log",
+      "analyzed": true,
+      "note": "Zeek S7comm log, JSON."
+    },
+    {
+      "path": "suricata/eve.json",
+      "kind": "suricata_eve",
+      "analyzed": true,
+      "note": "Suricata alerts and flows (eve.json)."
+    },
+    {
+      "path": "plc/pump.st",
+      "kind": "plc_st",
+      "analyzed": true,
+      "note": "PLC program, Structured Text. Give it controller IP 10.0.0.20."
+    },
+    {
+      "path": "plc/pump.xml",
+      "kind": "plc_plcopen",
+      "analyzed": true,
+      "note": "The same program as PLCopen XML (also 10.0.0.20)."
+    },
+    {
+      "path": "plc/tank.L5X",
+      "kind": "plc_l5x",
+      "analyzed": true,
+      "note": "Rockwell L5X project; the controller IP (10.0.0.40) is read from the file."
+    },
+    {
+      "path": "tshark/packets.ek.json",
+      "kind": "tshark_json",
+      "analyzed": false,
+      "note": "tshark -T ek export of the first packets. Stored, not analyzed yet."
+    },
+    {
+      "path": "logs/firewall.syslog",
+      "kind": "syslog",
+      "analyzed": false,
+      "note": "Firewall and host syslog around the incident. Stored, not analyzed yet."
+    },
+    {
+      "path": "tables/assets.csv",
+      "kind": "csv_assets",
+      "analyzed": false,
+      "note": "Asset inventory. Stored, not analyzed yet."
+    },
+    {
+      "path": "tables/historian.csv",
+      "kind": "csv_historian",
+      "analyzed": false,
+      "note": "Historian tag values around the incident. Stored, not analyzed yet."
+    },
+    {
+      "path": "other/project.ACD",
+      "kind": "unknown",
+      "analyzed": false,
+      "note": "Synthetic binary standing in for a proprietary PLC project. Hashed and stored only."
+    },
+    {
+      "path": "bundles/case.zip",
+      "kind": "bundle",
+      "analyzed": true,
+      "members": [
+        "capture/ot-demo.pcap:pcap",
+        "plc/pump.st:plc_st"
+      ],
+      "note": "A zip with a capture and a PLC program."
+    },
+    {
+      "path": "bundles/case.tar.gz",
+      "kind": "bundle",
+      "analyzed": true,
+      "members": [
+        "suricata/eve.json:suricata_eve",
+        "plc/tank.L5X:plc_l5x",
+        "plc/pump.xml:plc_plcopen"
+      ],
+      "note": "A tar.gz with logs and two PLC projects."
+    }
+  ]
+}

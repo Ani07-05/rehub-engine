@@ -1,0 +1,2 @@
+{"ts":1760000006.04,"uid":"C4Fsue2uTxaEA4MMl1","id.orig_h":"10.0.0.66","id.orig_p":40002,"id.resp_h":"10.0.0.30","id.resp_p":102,"is_orig":true,"source_h":"10.0.0.66","source_p":40002,"destination_h":"10.0.0.30","destination_p":102,"pdu_code":"0x0f","pdu_name":"DT Data"}
+{"ts":1760000006.06,"uid":"C4Fsue2uTxaEA4MMl1","id.orig_h":"10.0.0.66","id.orig_p":40002,"id.resp_h":"10.0.0.30","id.resp_p":102,"is_orig":false,"source_h":"10.0.0.30","source_p":102,"destination_h":"10.0.0.66","destination_p":40002,"pdu_code":"0x0f","pdu_name":"DT Data"}

@@ -1,0 +1,13 @@
+timestamp,tag,value,quality
+2025-10-09T08:53:15Z,Setpoint,300,good
+2025-10-09T08:53:15Z,SpeedLimit,1500,good
+2025-10-09T08:53:15Z,PumpSpeed,1180,good
+2025-10-09T08:53:15Z,Pressure,482,good
+2025-10-09T08:53:20Z,Pressure,486,good
+2025-10-09T08:53:22Z,Setpoint,1000,good
+2025-10-09T08:53:22Z,SpeedLimit,10000,good
+2025-10-09T08:53:23Z,PumpSpeed,1960,good
+2025-10-09T08:53:24Z,Pressure,561,good
+2025-10-09T08:53:26Z,PumpRun,0,good
+2025-10-09T08:53:28Z,Pressure,640,good
+2025-10-09T08:53:30Z,ReliefValve,0,good
