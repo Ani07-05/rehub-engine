@@ -195,3 +195,14 @@ def test_suricata_computes_flow_key_when_missing(tmp_path: Path) -> None:
     )
     assert event.flow_key == zeek_key
     assert event.proto == "tcp"
+
+
+def test_zeek_weird_titles_read_like_sentences(tmp_path: Path) -> None:
+    f = tmp_path / "weird.log"
+    f.write_text(
+        '{"ts":1.0,"name":"dnp3_header_lacks_magic","uid":"C1","id.orig_h":"10.0.0.8",'
+        '"id.orig_p":1,"id.resp_h":"10.0.0.3","id.resp_p":20000}\n'
+    )
+    [event] = list(parse_zeek([SourceFile(f, "weird.log", "e")]))
+    assert event.summary == "Protocol anomaly: dnp3 header lacks magic"
+    assert event.kind == EventKind.ALERT and event.severity == "low"

@@ -37,6 +37,16 @@ REDUNDANCY_MAC_PREFIXES = ("00:00:5e:00:01", "00:00:5e:00:02", "00:00:0c:07:ac",
 MERGE_WINDOW = 1.0
 REF_CAP = 25
 MODBUS_REGISTER_FUNCS = frozenset({"6", "16", "22", "23"})
+MODBUS_GAP = 2.0
+MODBUS_CODES = {
+    "READ_COILS": 1, "READ_DISCRETE_INPUTS": 2, "READ_HOLDING_REGISTERS": 3,
+    "READ_INPUT_REGISTERS": 4, "WRITE_SINGLE_COIL": 5, "WRITE_SINGLE_REGISTER": 6,
+    "READ_EXCEPTION_STATUS": 7, "DIAGNOSTICS": 8, "GET_COMM_EVENT_COUNTER": 11,
+    "GET_COMM_EVENT_LOG": 12, "WRITE_MULTIPLE_COILS": 15, "WRITE_MULTIPLE_REGISTERS": 16,
+    "REPORT_SLAVE_ID": 17, "READ_FILE_RECORD": 20, "WRITE_FILE_RECORD": 21,
+    "MASK_WRITE_REGISTER": 22, "READ_WRITE_MULTIPLE_REGISTERS": 23, "READ_FIFO_QUEUE": 24,
+    "ENCAP_INTERFACE_TRANSPORT": 43,
+}  # fmt: skip
 EXPECTED_TOOLS = ("zeek", "suricata", "tshark")
 FLOW_PRIORITY = {"zeek": 0, "suricata": 1, "tshark": 2}
 
@@ -96,7 +106,12 @@ def _build_flows(inv: Investigation, events: list[Event]) -> None:
         flow = inv.flows[ev.flow_key]
         service = ev.attrs.get("service") or ev.attrs.get("app_proto")
         if service and not flow.service and ev.tool in ("zeek", "suricata"):
-            flow.service = service
+            flow.service = _normalize_service(service)
+
+
+def _normalize_service(service: str) -> str:
+    tokens = [t.removesuffix("_tcp").removesuffix("_udp") for t in service.split(",") if t]
+    return ",".join(dict.fromkeys(tokens))
 
 
 def _flow_protocol(flow: Flow) -> str | None:
@@ -141,8 +156,9 @@ def _attribute_macs(inv: Investigation, events: list[Event]) -> None:
     for mac in sorted(gateways):
         ips = sorted(ips_by_mac[mac])
         inv.caveats.append(
-            f"MAC {mac} is shared by {len(ips)} IPs ({', '.join(ips)}): treated as a gateway, "
-            "no vendor attributed to those hosts from it."
+            f"MAC {mac} is shared by {len(ips)} IPs ({', '.join(ips)}): it may be a gateway, "
+            "a proxy or one machine with several addresses, so no vendor is attributed to "
+            "those hosts from it."
         )
 
 
@@ -195,6 +211,13 @@ def _build_assets(inv: Investigation, events: list[Event], oui: OuiTable) -> Non
         )
 
 
+def _modbus_code(ev: Event) -> str:
+    if ev.tool == "zeek":
+        func = ev.attrs.get("func", "")
+        return str(MODBUS_CODES.get(func, func))
+    return ev.attrs.get("modbus.request.function_raw", "")
+
+
 def _modbus_tid(ev: Event) -> str | None:
     if ev.tool == "zeek":
         return ev.attrs.get("tid")
@@ -220,12 +243,19 @@ def _control(ev: Event) -> tuple[str, str, str, list[str]] | None:
     return None
 
 
-def _detail_index(events: list[Event]) -> dict[tuple[str | None, str, str], Event]:
-    return {
-        (e.flow_key, e.attrs.get("tid", ""), e.attrs.get("func", "")): e
-        for e in events
-        if e.proto == "modbus_detailed"
-    }
+def _detail_index(events: list[Event]) -> dict[tuple[str | None, str, str], list[Event]]:
+    index: dict[tuple[str | None, str, str], list[Event]] = defaultdict(list)
+    for e in events:
+        if e.proto == "modbus_detailed":
+            index[(e.flow_key, e.attrs.get("tid", ""), e.attrs.get("func", ""))].append(e)
+    return index
+
+
+def _detail_for(index: dict[tuple[str | None, str, str], list[Event]], ev: Event) -> Event | None:
+    candidates = index.get((ev.flow_key, ev.attrs.get("tid", ""), ev.attrs.get("func", "")), [])
+    if not candidates:
+        return None
+    return min(candidates, key=lambda d: abs((d.ts or 0.0) - (ev.ts or 0.0)))
 
 
 def _detection_id(*parts: object) -> str:
@@ -256,7 +286,7 @@ def _group_key(ev: Event, rule: str, title: str) -> tuple[object, ...]:
         and ev.flow_key
         and (rule == "control:modbus" or ev.attrs.get("app_proto") == "modbus")
     ):
-        return ("modbus", ev.flow_key, tid)
+        return ("modbus", ev.flow_key, tid, _modbus_code(ev))
     return ("rule", rule, ev.flow_key, title)
 
 
@@ -298,7 +328,8 @@ def _merge_by_time(found: dict[tuple[object, ...], Detection]) -> None:
 def _build_detections(inv: Investigation, events: list[Event]) -> None:
     detail = _detail_index(events)
     found: dict[tuple[object, ...], Detection] = {}
-    for ev in events:
+    sequence: dict[tuple[object, ...], int] = {}
+    for ev in sorted(events, key=lambda e: (e.ts is None, e.ts or 0.0)):
         attack: list[str] = []
         extra: dict[str, str]
         if ev.kind == EventKind.LOGIC:
@@ -324,7 +355,7 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
                 continue
             rule, title, severity, attack = control
             extra = {"func": ev.attrs["func"]} if "func" in ev.attrs else {}
-            d = detail.get((ev.flow_key, ev.attrs.get("tid", ""), ev.attrs.get("func", "")))
+            d = _detail_for(detail, ev)
             if d:
                 extra.update(
                     {
@@ -333,7 +364,21 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
                         if k in d.attrs
                     }
                 )
-        key = _group_key(ev, rule, title)
+        base = _group_key(ev, rule, title)
+        if base[0] == "modbus":
+            index = sequence.get(base, 0)
+            latest = found.get((*base, index))
+            if (
+                latest is not None
+                and ev.ts is not None
+                and latest.last_ts is not None
+                and ev.ts - latest.last_ts > MODBUS_GAP
+            ):
+                index += 1
+            sequence[base] = index
+            key = (*base, index)
+        else:
+            key = base
         det = found.get(key)
         if det is None:
             det = found[key] = Detection(

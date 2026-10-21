@@ -127,8 +127,10 @@ def _summary(log: str, row: Row) -> str:
         return f"{row.get('rosctr_name')} {row.get('function_name')}"
     if log == "cotp":
         return str(row.get("pdu_name"))
+    if log == "weird":
+        return f"Protocol anomaly: {str(row.get('name') or 'unknown').replace('_', ' ')}"
     if log in NOTICE_SEVERITY:
-        return str(row.get("msg") or row.get("name") or log)
+        return str(row.get("msg") or row.get("note") or row.get("name") or log)
     return log
 
 

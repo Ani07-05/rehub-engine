@@ -286,3 +286,87 @@ def test_suricata_only_register_write_still_links() -> None:
     inv = correlate(events, plc=[project])
     single = next(d for d in inv.detections if "single register" in d.title)
     assert [i.variable for i in single.plc] == ["Setpoint"]
+
+
+FLOW = "1:regression-flow"
+
+
+def zeek_req(ts: float, func: str, tid: str = "1") -> Event:
+    return Event(
+        ts=ts, tool="zeek", kind=EventKind.PROTOCOL_ACTION, evidence_id="e", src="10.0.0.9",
+        dst="10.0.0.3", sport=3082, dport=502, proto="modbus", flow_key=FLOW,
+        attrs={"pdu_type": "REQ", "func": func, "tid": tid},
+    )  # fmt: skip
+
+
+def zeek_detail(ts: float, func: str, address: int, tid: str = "1") -> Event:
+    return Event(
+        ts=ts, tool="zeek", kind=EventKind.PROTOCOL_ACTION, evidence_id="e", src="10.0.0.9",
+        dst="10.0.0.3", proto="modbus_detailed", flow_key=FLOW,
+        attrs={"func": func, "tid": tid, "address": str(address), "quantity": "1"},
+    )  # fmt: skip
+
+
+def suricata_modbus(ts: float, code: int, tid: str = "1") -> Event:
+    return Event(
+        ts=ts, tool="suricata", kind=EventKind.ALERT, evidence_id="e", src="10.0.0.9",
+        dst="10.0.0.3", proto="tcp", flow_key=FLOW, severity="low", summary=f"rule for code {code}",
+        attrs={
+            "sid": f"900000{code}", "app_proto": "modbus",
+            "modbus.request.transaction_id": tid, "modbus.request.function_raw": str(code),
+        },
+    )  # fmt: skip
+
+
+def test_reused_modbus_transaction_ids_do_not_merge_different_commands() -> None:
+    """Old devices send transaction id 1 for everything; found on a real capture."""
+    events = [
+        zeek_req(100.0, "READ_COILS"),
+        zeek_req(110.0, "WRITE_SINGLE_COIL"),
+        zeek_detail(110.0, "WRITE_SINGLE_COIL", 5),
+        zeek_req(120.0, "WRITE_SINGLE_COIL"),
+        zeek_detail(120.0, "WRITE_SINGLE_COIL", 7),
+        zeek_req(130.0, "WRITE_SINGLE_REGISTER"),
+        suricata_modbus(130.05, 6),
+    ]
+    inv = correlate(events)
+    by_title: dict[str, list[object]] = {}
+    for d in inv.detections:
+        by_title.setdefault(d.title, []).append(d)
+    coils = sorted(by_title["Modbus WRITE_SINGLE_COIL"], key=lambda d: d.first_ts or 0.0)  # type: ignore[attr-defined]
+    assert len(coils) == 2
+    assert [c.attrs["address"] for c in coils] == ["5", "7"]  # type: ignore[attr-defined]
+    for coil in coils:
+        assert coil.tools == {"zeek"}  # type: ignore[attr-defined]
+        assert coil.attack == ["T0855 Unauthorized Command Message"]  # type: ignore[attr-defined]
+    [register] = by_title["Modbus WRITE_SINGLE_REGISTER"]
+    assert register.tools == {"zeek", "suricata"}  # type: ignore[attr-defined]
+    assert "T0836 Modify Parameter" in register.attack  # type: ignore[attr-defined]
+    assert len(inv.detections) == 3
+
+
+def test_same_command_seen_by_both_tools_still_merges() -> None:
+    inv = correlate([zeek_req(100.0, "WRITE_SINGLE_REGISTER"), suricata_modbus(100.08, 6)])
+    [det] = inv.detections
+    assert det.tools == {"zeek", "suricata"} and det.corroborated and det.count == 2
+
+
+def test_rule_for_a_different_function_is_not_stolen_by_a_coil_write() -> None:
+    inv = correlate([zeek_req(100.0, "WRITE_SINGLE_COIL"), suricata_modbus(100.02, 6)])
+    titles = sorted(d.title for d in inv.detections)
+    assert titles == ["Modbus WRITE_SINGLE_COIL", "rule for code 6"]
+    coil = next(d for d in inv.detections if d.title.startswith("Modbus"))
+    assert not coil.corroborated
+
+
+def test_dnp3_service_names_are_normalized_and_roles_found() -> None:
+    from rehub.schema import Event as E
+
+    flow = Event(
+        ts=1.0, tool="zeek", kind=EventKind.FLOW, evidence_id="e", src="10.0.0.8", dst="10.0.0.3",
+        sport=2789, dport=20000, proto="tcp", flow_key="1:dnp3", attrs={"service": "dnp3_tcp"},
+    )  # fmt: skip
+    inv = correlate([flow])
+    assert inv.flows["1:dnp3"].service == "dnp3"
+    assert "dnp3_server" in inv.assets["10.0.0.3"].roles
+    assert E is Event
