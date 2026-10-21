@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Install - ReHub docs</title>
+<meta name="description" content="Requirements, supported platforms and install steps for ReHub.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="top-name" href="/">ReHub</a>
+    <a class="top-link" href="/docs/">Docs</a>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+<div class="docs">
+  <nav class="docs-nav" aria-label="Documentation"><a href="/docs/index.html">Overview</a><a href="/docs/install.html" aria-current="page">Install</a><a href="/docs/usage.html">Usage</a><a href="/docs/reference.html">Reference</a><a href="/docs/architecture.html">How it works</a><ul class="docs-toc" aria-label="On this page"><li><a href="#requirements">Requirements</a></li><li><a href="#platforms">Platforms</a></li><li><a href="#one-line">One line</a></li><li><a href="#from-source">From a checkout</a></li><li><a href="#options">Installer options</a></li><li><a href="#what-runs">What it starts</a></li><li><a href="#first-run">First run</a></li><li><a href="#uninstall">Remove it</a></li></ul></nav>
+  <main id="content" class="doc">
+<h1>Install</h1>
+<p class="lead">ReHub runs in Docker. The installer starts two containers, checks that the tools work, prints the address and opens it.</p>
+
+<h2 id="requirements">Requirements</h2>
+<div class="tablewrap"><table><thead><tr><th>Need</th><th>Detail</th></tr></thead><tbody><tr><td>Docker</td><td>Docker Desktop or Docker Engine, with Compose v2 (<code>docker compose</code>).</td></tr><tr><td>Disk</td><td>About 280 MB for the image, plus space for your evidence. Evidence is kept in a Docker volume named <code>rehub-data</code>.</td></tr><tr><td>Memory</td><td>The engine container is limited to 4 GB by default. Set <code>REHUB_MEMORY</code> to change it.</td></tr><tr><td>Network</td><td>Only to pull the image the first time. After that ReHub works offline.</td></tr><tr><td>Browser</td><td>Any current browser. The page is plain HTML, CSS and JavaScript with no build step.</td></tr></tbody></table></div>
+
+<h2 id="platforms">Platforms</h2>
+<div class="tablewrap"><table><thead><tr><th>Platform</th><th>Status</th></tr></thead><tbody><tr><td>macOS, Apple silicon, Docker Desktop</td><td>Tested end to end, including the one-line install from a clean home.</td></tr><tr><td>Linux (amd64, arm64)</td><td>The image is built for both in CI. Installing on Linux is untested.</td></tr><tr><td>Windows with WSL 2</td><td>Untested.</td></tr><tr><td>macOS, Intel</td><td>The amd64 image should run. Untested.</td></tr></tbody></table></div>
+
+<h2 id="one-line">One line</h2>
+<div class="cmd"><pre><code id="c1">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh</code></pre><button class="btn small" type="button" data-copy="c1">Copy</button></div>
+<p>The same file is served from this site at <code>/install.sh</code>. It is one short script with the compose file inside it, so you can read all of it first:</p>
+<div class="cmd"><pre><code id="c2">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh -o install.sh
+less install.sh
+sh install.sh</code></pre><button class="btn small" type="button" data-copy="c2">Copy</button></div>
+<p>To pin an exact version, replace <code>main</code> in the address with a tag or commit.</p>
+<p>The installer writes its files to <code>~/.rehub</code>, pulls the image, starts the stack, runs the doctor, prints the address (<code>http://localhost:8080</code> by default) and opens it.</p>
+
+<h2 id="from-source">From a checkout</h2>
+<div class="cmd"><pre><code id="c3">git clone https://github.com/Ani07-05/rehub-engine
+cd rehub-engine
+./scripts/install.sh --local</code></pre><button class="btn small" type="button" data-copy="c3">Copy</button></div>
+<p><code>--local</code> builds the image from the checkout instead of pulling it.</p>
+
+<h2 id="options">Installer options</h2>
+<div class="tablewrap"><table><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody><tr><td><code>--local</code></td><td>Build the image from the checkout.</td></tr><tr><td><code>--port N</code></td><td>Publish the UI on this port. Default 8080. Also <code>REHUB_PORT</code>.</td></tr><tr><td><code>--auth</code></td><td>Turn on the access token. A sign-in link is printed.</td></tr><tr><td><code>--no-open</code></td><td>Do not open the browser.</td></tr><tr><td><code>--update</code></td><td>Pull the newest image and restart.</td></tr><tr><td><code>--status</code></td><td>Show what is running.</td></tr><tr><td><code>--uninstall</code></td><td>Stop and remove the containers. Your investigations are kept.</td></tr><tr><td><code>--uninstall --purge</code></td><td>Also delete the investigations.</td></tr></tbody></table></div>
+<p>Environment variables the installer reads: <code>REHUB_HOME</code> (default <code>~/.rehub</code>), <code>REHUB_PORT</code>, <code>REHUB_IMAGE</code> (default <code>ghcr.io/ani07-05/rehub-engine:latest</code>) and <code>REHUB_PROJECT</code> (the Compose project name, default <code>rehub</code>).</p>
+
+<h2 id="what-runs">What it starts</h2>
+<ul class="plain">
+<li><b>engine</b> parses the evidence. It sits on a network with no route out, has a read-only root, all Linux capabilities dropped, <code>no-new-privileges</code>, and memory and process limits. It publishes no ports.</li>
+<li><b>gateway</b> is a small TCP forwarder (about 50 lines) that publishes the UI on <code>127.0.0.1</code> only.</li>
+</ul>
+
+<h2 id="first-run">First run</h2>
+<p>Open the address. A REHUB screen checks Storage, Zeek, Suricata and tshark, including a self-test on a small built-in capture, one service at a time from left to right. When all pass, press Enter.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/splash.webp" width="1280" height="600" alt="The REHUB start screen with the service checks." loading="lazy"><figcaption>The start screen. It checks that every tool runs before you upload anything.</figcaption></figure>
+<p>You can run the same check from a terminal: <code>docker compose -p rehub exec engine rehub --data /data doctor</code>.</p>
+
+<h2 id="uninstall">Remove it</h2>
+<div class="cmd"><pre><code id="c4">sh install.sh --uninstall           # stop it, keep your investigations
+sh install.sh --uninstall --purge   # also delete them</code></pre><button class="btn small" type="button" data-copy="c4">Copy</button></div>
+
+    <nav class="pn" aria-label="Pages"><a class="prev" href="/docs/index.html">Previous: Overview</a><a class="next" href="/docs/usage.html">Next: Usage</a></nav>
+    <p class="status" id="copied" role="status" aria-live="polite"></p>
+  </main>
+</div>
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>

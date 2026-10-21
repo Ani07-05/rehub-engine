@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>How it works - ReHub docs</title>
+<meta name="description" content="The ReHub pipeline, correlation and PLC analysis.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="top-name" href="/">ReHub</a>
+    <a class="top-link" href="/docs/">Docs</a>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+<div class="docs">
+  <nav class="docs-nav" aria-label="Documentation"><a href="/docs/index.html">Overview</a><a href="/docs/install.html">Install</a><a href="/docs/usage.html">Usage</a><a href="/docs/reference.html">Reference</a><a href="/docs/architecture.html" aria-current="page">How it works</a><ul class="docs-toc" aria-label="On this page"><li><a href="#flow">The pipeline</a></li><li><a href="#correlation">Correlation</a></li><li><a href="#plc">PLC analysis</a></li><li><a href="#why-local">Why it is local</a></li><li><a href="#source">Source layout</a></li></ul></nav>
+  <main id="content" class="doc">
+<h1>How it works</h1>
+<p class="lead">The tools are good at their own jobs. The engine's job is to line their output up and say where they agree.</p>
+
+<h2 id="flow">The pipeline</h2>
+<ol class="steps">
+<li><b>Identify.</b> Each file is typed by its content, hashed with SHA-256 and stored once. Archives are unpacked with limits.</li>
+<li><b>Run the tools.</b> Zeek, Suricata and tshark run on each capture inside the container, with no network.</li>
+<li><b>Normalize.</b> An adapter per tool turns its output into one Event schema, and keeps which tool and which file line it came from.</li>
+<li><b>Correlate.</b> Events are joined into conversations and detections (below).</li>
+<li><b>Join the PLC.</b> PLC projects are parsed. Writes seen on the wire are linked to variables and logic.</li>
+<li><b>Write the record.</b> One JSON record per investigation, which the UI and the report read.</li>
+</ol>
+
+<h2 id="correlation">Correlation</h2>
+<ul class="plain">
+<li><b>Flow identity.</b> Community ID v1, implemented in ReHub and checked against Zeek and Suricata, so the same conversation has the same key in every tool.</li>
+<li><b>Modbus commands.</b> Matched by flow, transaction id and function code. A gap of more than 2 seconds splits reused transaction ids into separate commands.</li>
+<li><b>Corroboration.</b> A detection is corroborated when two independent tools report it.</li>
+<li><b>Attribution.</b> MAC addresses come from ARP replies first. A gateway or shared MAC is flagged. ARP conflicts are reported.</li>
+<li><b>ATT&amp;CK for ICS.</b> Candidates such as T0855 (Unauthorized Command Message), T0836 (Modify Parameter) and T0858 (Change Operating Mode).</li>
+</ul>
+
+<h2 id="plc">PLC analysis</h2>
+<p>ReHub parses Structured Text, PLCopen XML and Rockwell L5X. It finds variables, the logic that reads them and the outputs they drive. A Modbus register write is linked to a variable by assuming wire address N is <code>%MW N</code>, which is the default on Schneider M580 and CODESYS. The page shows that assumption next to every link, because your device may be configured differently.</p>
+
+<h2 id="why-local">Why it is local</h2>
+<p>OT evidence often contains network layouts and device names that cannot leave a site. The engine container cannot reach anything outside, so a bug or a malicious capture cannot send data out. The gateway is the only thing that publishes a port, and only on <code>127.0.0.1</code>.</p>
+
+<h2 id="source">Source layout</h2>
+<div class="tablewrap"><table><thead><tr><th>Path</th><th>Holds</th></tr></thead><tbody><tr><td><code>src/rehub/sniff.py</code>, <code>ingest.py</code></td><td>Identify evidence by content, store it by hash, unpack safely.</td></tr><tr><td><code>src/rehub/tools.py</code>, <code>doctor.py</code></td><td>Tool runners and the self-test.</td></tr><tr><td><code>src/rehub/adapters/</code></td><td>Tool output to the Event schema.</td></tr><tr><td><code>src/rehub/correlate.py</code>, <code>model.py</code></td><td>Assets, flows, detections, corroboration.</td></tr><tr><td><code>src/rehub/plc/</code></td><td>PLC parsing, analysis and register linking.</td></tr><tr><td><code>src/rehub/api.py</code>, <code>auth.py</code></td><td>Local HTTP API and optional token.</td></tr><tr><td><code>src/rehub/ui/</code></td><td>The web UI. Plain files, no build step.</td></tr><tr><td><code>docker/</code>, <code>compose.yml</code></td><td>The tool image and hardened stack.</td></tr></tbody></table></div>
+<p>To work on it: <code>uv sync</code>, then <code>uv run pytest</code>. See the <a href="https://github.com/Ani07-05/rehub-engine#develop">README</a>.</p>
+
+    <nav class="pn" aria-label="Pages"><a class="prev" href="/docs/reference.html">Previous: Reference</a></nav>
+    <p class="status" id="copied" role="status" aria-live="polite"></p>
+  </main>
+</div>
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>

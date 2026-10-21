@@ -46,6 +46,10 @@ It starts two containers from `compose.yml`:
 
 Then it runs the doctor, prints the address and opens it. Also: `install.sh --update`, `--status`, `--uninstall [--purge]`, `--port N`, `--auth`.
 
+## Docs
+
+`site/docs/` holds the documentation pages (overview, install, usage, reference, how it works) with real screenshots, published at https://rehub-engine.vercel.app/docs/.
+
 ## Landing page
 
 `site/` is a static landing page (plain HTML, CSS and one small script, strict CSP, light and dark). `vercel.json` publishes it with `install.sh` served as plain text next to it, so the one-line install can come from the page's own address. Preview it with `./scripts/preview-site.sh`. It is live at https://rehub-engine.vercel.app (Vercel project `rehub-engine`). Redeploy with `./scripts/deploy-site.sh` (needs the vercel CLI logged in; it uploads only the site files plus the current `install.sh`). Connecting the repository to the project for automatic deploys also works: `vercel.json` sets the build and output. The page's install command adapts to the origin it is served from.

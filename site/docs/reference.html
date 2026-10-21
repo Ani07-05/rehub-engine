@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Reference - ReHub docs</title>
+<meta name="description" content="Evidence kinds, environment variables, HTTP API, security model and limits.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="top-name" href="/">ReHub</a>
+    <a class="top-link" href="/docs/">Docs</a>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+<div class="docs">
+  <nav class="docs-nav" aria-label="Documentation"><a href="/docs/index.html">Overview</a><a href="/docs/install.html">Install</a><a href="/docs/usage.html">Usage</a><a href="/docs/reference.html" aria-current="page">Reference</a><a href="/docs/architecture.html">How it works</a><ul class="docs-toc" aria-label="On this page"><li><a href="#evidence-kinds">Evidence kinds</a></li><li><a href="#environment">Environment variables</a></li><li><a href="#api">HTTP API</a></li><li><a href="#security">Security model</a></li><li><a href="#limits">Known limits</a></li><li><a href="#tools">Pinned tools</a></li></ul></nav>
+  <main id="content" class="doc">
+<h1>Reference</h1>
+
+<h2 id="evidence-kinds">Evidence kinds</h2>
+<p>ReHub identifies each file by its content, not its name. A zip, tar or gzip of files is unpacked with limits (at most 5000 files and 16 GiB expanded).</p>
+<div class="tablewrap"><table><thead><tr><th>Kind</th><th>Analyzed</th><th>Notes</th></tr></thead><tbody><tr><td>pcap, pcapng (also gzipped)</td><td>Yes</td><td>Run through Zeek, Suricata and tshark.</td></tr><tr><td>Zeek logs (TSV or JSON)</td><td>Yes</td><td>Read directly.</td></tr><tr><td>Suricata <code>eve.json</code></td><td>Yes</td><td>Alerts joined with the other tools by Community ID.</td></tr><tr><td>PLC Structured Text (<code>.st</code>)</td><td>Yes</td><td>Static analysis; variables and logic linked to Modbus writes.</td></tr><tr><td>PLCopen XML</td><td>Yes</td><td>DTDs and entities are rejected.</td></tr><tr><td>Rockwell L5X</td><td>Yes</td><td>DTDs and entities are rejected.</td></tr><tr><td>tshark JSON, syslog, CSV asset lists, CSV historian exports</td><td>No</td><td>Stored and hashed. Listed as stored but not analyzed yet.</td></tr><tr><td>Anything else</td><td>No</td><td>Stored and hashed.</td></tr></tbody></table></div>
+
+<h2 id="environment">Environment variables</h2>
+<div class="tablewrap"><table><thead><tr><th>Variable</th><th>Meaning</th></tr></thead><tbody><tr><td><code>REHUB_DATA</code></td><td>Where investigations are stored.</td></tr><tr><td><code>REHUB_HOST</code>, <code>REHUB_PORT</code></td><td>Address <code>serve</code> binds to. Default is loopback.</td></tr><tr><td><code>REHUB_ALLOWED_HOSTS</code></td><td>Extra Host header values to accept, against DNS rebinding.</td></tr><tr><td><code>REHUB_PUBLIC_URL</code></td><td>Address printed in the sign-in link.</td></tr><tr><td><code>REHUB_TOKEN</code>, <code>REHUB_AUTH</code></td><td>Turn on the access token.</td></tr><tr><td><code>REHUB_MAX_UPLOAD_BYTES</code></td><td>Largest single upload. Default 8 GiB.</td></tr><tr><td><code>REHUB_MAX_DRAFT_BYTES</code></td><td>Largest total for one investigation. Default 16 GiB.</td></tr><tr><td><code>REHUB_WORKERS</code></td><td>How many investigations run at once. Default 1.</td></tr><tr><td><code>REHUB_OUI</code></td><td>Path to an IEEE OUI CSV that adds to the built-in MAC vendor table.</td></tr><tr><td><code>REHUB_MEMORY</code></td><td>Engine container memory limit in the Compose stack. Default 4g.</td></tr></tbody></table></div>
+<p>Installer variables (<code>REHUB_HOME</code>, <code>REHUB_IMAGE</code>, <code>REHUB_PROJECT</code>) are on the <a href="/docs/install.html#options">Install</a> page.</p>
+
+<h2 id="api">HTTP API</h2>
+<p>The UI uses this API. It is local only and has no stability promise yet. Every change (POST, PUT, DELETE) needs the header <code>X-Rehub: 1</code> and a matching Origin.</p>
+<div class="tablewrap"><table><thead><tr><th>Request</th><th>Does</th></tr></thead><tbody><tr><td><code>GET /api/health</code></td><td>Liveness and whether sign-in is on.</td></tr><tr><td><code>GET /api/doctor</code></td><td>Run the tool checks.</td></tr><tr><td><code>POST /api/investigations</code></td><td>Create an empty investigation. Returns its id.</td></tr><tr><td><code>PUT /api/investigations/ID/files?name=NAME</code></td><td>Upload one file as the request body.</td></tr><tr><td><code>POST /api/investigations/ID/run</code></td><td>Start analysis. Body: <code>{{"plc_ips": {{"pump.st": "10.0.0.20"}}}}</code>.</td></tr><tr><td><code>GET /api/investigations</code></td><td>List investigations.</td></tr><tr><td><code>GET /api/investigations/ID</code></td><td>Status and, when done, the full record.</td></tr><tr><td><code>DELETE /api/investigations/ID</code></td><td>Delete one.</td></tr><tr><td><code>GET /api/investigations/ID/evidence/SHA</code></td><td>Download an evidence file.</td></tr><tr><td><code>GET /api/investigations/ID/evidence/SHA/lines?start=&amp;count=</code></td><td>Read lines of a file with context.</td></tr><tr><td><code>GET /api/investigations/ID/flows/KEY/packets?limit=</code></td><td>Packets of one conversation.</td></tr><tr><td><code>POST /api/demo</code></td><td>Analyze the built-in demo.</td></tr><tr><td><code>POST /api/logout</code></td><td>Clear the sign-in cookie.</td></tr></tbody></table></div>
+
+<h2 id="security">Security model</h2>
+<ul class="plain">
+<li>Binds to loopback. A Host allowlist guards against DNS rebinding.</li>
+<li>Every change needs the <code>X-Rehub</code> header and a matching Origin.</li>
+<li>Evidence is only served as a download. Every string that comes from a file is shown as text, never as HTML.</li>
+<li>Strict Content Security Policy with no inline script or style.</li>
+<li>Upload size caps, sanitized file names, and limits on zip, tar and gzip expansion.</li>
+<li>PLC XML with DTDs or entities is rejected.</li>
+<li>Optional access token, turned into an HttpOnly, SameSite=Strict cookie.</li>
+<li>The engine container has no route out, a read-only root and no capabilities.</li>
+</ul>
+
+<h2 id="limits">Known limits</h2>
+<ul class="plain">
+<li>Suricata runs with ReHub's own rules only. The Emerging Threats Open set is not bundled.</li>
+<li>Correlation holds all events in memory. Very large captures have not been tested.</li>
+<li>The tool versions used are pinned in the image but not yet written into each investigation record.</li>
+<li>Only tested on macOS with Apple silicon. See <a href="/docs/install.html#platforms">Platforms</a>.</li>
+<li>ATT&amp;CK for ICS mappings (T0855, T0836, T0858) are candidates. They show the technique a behavior is consistent with, not that an attack happened.</li>
+</ul>
+
+<h2 id="tools">Pinned tools</h2>
+<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th></tr></thead><tbody><tr><td>Zeek</td><td>8.0.10</td></tr><tr><td>CISA ICSNPP S7comm and EtherNet/IP</td><td>pinned commits</td></tr><tr><td>Suricata</td><td>8.0.7</td></tr><tr><td>tshark</td><td>4.4.19</td></tr></tbody></table></div>
+
+    <nav class="pn" aria-label="Pages"><a class="prev" href="/docs/usage.html">Previous: Usage</a><a class="next" href="/docs/architecture.html">Next: How it works</a></nav>
+    <p class="status" id="copied" role="status" aria-live="polite"></p>
+  </main>
+</div>
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>

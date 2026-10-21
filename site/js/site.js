@@ -37,12 +37,13 @@
 
   var themeBtn = document.getElementById("theme");
   function drawTheme() {
+    if (!themeBtn) return;
     var light = currentTheme() === "light";
     themeBtn.replaceChildren(icon(light ? "moon" : "sun"));
     themeBtn.setAttribute("aria-label", light ? "Switch to dark mode" : "Switch to light mode");
     themeBtn.setAttribute("title", light ? "Switch to dark mode" : "Switch to light mode");
   }
-  themeBtn.addEventListener("click", function () {
+  if (themeBtn) themeBtn.addEventListener("click", function () {
     var next = currentTheme() === "light" ? "dark" : "light";
     root.setAttribute("data-theme", next);
     try { localStorage.setItem("rehub.theme", next); } catch (err) { /* choice just will not persist */ }
@@ -53,9 +54,8 @@
   var served = location.protocol === "http:" || location.protocol === "https:";
   if (served && location.hostname !== "raw.githubusercontent.com") {
     var url = location.origin + "/install.sh";
-    ["cmd-hero", "cmd-one", "cmd-read"].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.textContent = el.textContent.split(RAW).join(url);
+    document.querySelectorAll("pre code").forEach(function (el) {
+      if (el.textContent.indexOf(RAW) !== -1) el.textContent = el.textContent.split(RAW).join(url);
     });
   }
 
@@ -81,6 +81,7 @@
   var status = document.getElementById("copied");
   var timer = null;
   function say(text) {
+    if (!status) return;
     status.textContent = text;
     clearTimeout(timer);
     timer = setTimeout(function () { status.textContent = ""; }, 3000);

@@ -56,7 +56,8 @@ def test_page_has_no_inline_script_or_style_and_no_third_party_loads() -> None:
 def test_every_local_reference_exists() -> None:
     for _tag, _key, ref in parsed().refs:
         if ref.startswith("/") and not ref.startswith("//"):
-            assert (SITE / ref.lstrip("/")).is_file(), ref
+            t = SITE / ref.lstrip("/")
+            assert t.is_file() or (t / "index.html").is_file(), ref
 
 
 def test_anchors_and_copy_targets_resolve() -> None:
@@ -129,7 +130,7 @@ def test_built_installer_copy_is_not_committed() -> None:
 
 def test_page_stays_light() -> None:
     total = sum(p.stat().st_size for p in SITE.rglob("*") if p.is_file())
-    assert total < 900_000
+    assert total < 1_800_000
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs node")
@@ -140,3 +141,52 @@ def test_site_script_is_valid_javascript() -> None:
     )
     for banned in ("innerHTML", "eval(", "document.write"):
         assert banned not in (SITE / "js" / "site.js").read_text()
+
+
+DOC_PAGES = sorted((SITE / "docs").glob("*.html"))
+
+
+def parse_file(path: Path) -> tuple[Refs, str]:
+    text = path.read_text()
+    p = Refs()
+    p.feed(text)
+    return p, text
+
+
+def test_docs_cover_the_arsenal_sections() -> None:
+    names = {p.name for p in DOC_PAGES}
+    assert names == {
+        "index.html",
+        "install.html",
+        "usage.html",
+        "reference.html",
+        "architecture.html",
+    }
+    overview = (SITE / "docs" / "index.html").read_text()
+    for anchor in ('id="description"', 'id="features"', 'id="license"', 'id="changelog"'):
+        assert anchor in overview
+    install = (SITE / "docs" / "install.html").read_text()
+    assert 'id="requirements"' in install and 'id="platforms"' in install
+    assert 'id="cli"' in (SITE / "docs" / "usage.html").read_text()
+
+
+@pytest.mark.parametrize("page", DOC_PAGES, ids=lambda p: p.name)
+def test_docs_page_is_self_contained_and_resolves(page: Path) -> None:
+    p, text = parse_file(page)
+    assert p.inline_scripts == 0 and "<style" not in text and "—" not in text
+    for tag, _key, ref in p.refs:
+        if ref.startswith("#"):
+            assert ref[1:] in p.ids, ref
+        elif ref.startswith("/") and not ref.startswith("//"):
+            target = SITE / ref.split("#")[0].lstrip("/")
+            assert target.is_file() or (target.is_dir() and (target / "index.html").is_file()), ref
+            if ref.split("#")[1:] and ref.endswith(".html#" + ref.split("#")[1]):
+                other, _ = parse_file(target)
+                assert ref.split("#")[1] in other.ids, ref
+        elif ref.startswith("http"):
+            assert ref.startswith("https://github.com/Ani07-05/") or tag == "a", ref
+    for target in re.findall(r'data-copy="([^"]+)"', text):
+        assert target in p.ids
+    for img in p.imgs:
+        assert img.get("alt") and img.get("width") and img.get("height")
+        assert (SITE / str(img["src"]).lstrip("/")).stat().st_size < 150_000

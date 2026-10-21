@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Overview - ReHub docs</title>
+<meta name="description" content="What ReHub is, its features, license and changelog.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="top-name" href="/">ReHub</a>
+    <a class="top-link" href="/docs/">Docs</a>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+<div class="docs">
+  <nav class="docs-nav" aria-label="Documentation"><a href="/docs/index.html" aria-current="page">Overview</a><a href="/docs/install.html">Install</a><a href="/docs/usage.html">Usage</a><a href="/docs/reference.html">Reference</a><a href="/docs/architecture.html">How it works</a><ul class="docs-toc" aria-label="On this page"><li><a href="#description">Description</a></li><li><a href="#features">Features</a></li><li><a href="#what-it-is-not">What it is not</a></li><li><a href="#license">License</a></li><li><a href="#changelog">Changelog</a></li></ul></nav>
+  <main id="content" class="doc">
+<h1>ReHub documentation</h1>
+<p class="lead">ReHub is a local, offline investigation engine for operational technology (OT) evidence. You give it a packet capture, tool logs or PLC project files. It runs Zeek, Suricata and tshark in one container, joins their output with the PLC logic, and answers in plain language first, with the proof one click away.</p>
+
+<h2 id="description">Description</h2>
+<p>An OT incident usually leaves evidence in several shapes: a capture from a mirror port, Zeek logs, Suricata alerts, and the PLC program itself. Each tool shows part of the story. ReHub reads all of them, normalizes the output into one event schema, and builds one investigation: which devices exist, who talked to whom, what looks wrong, what proves it, and a report you can hand to someone else.</p>
+<p>It runs on your own machine. The analysis container has no route out: it cannot reach the internet or resolve names. Evidence is never uploaded anywhere.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/summary.webp" width="1280" height="1050" alt="The ReHub Summary screen for the demo case." loading="lazy"><img class="only-light" src="/img/docs/summary-light.webp" width="1280" height="1050" alt="The ReHub Summary screen for the demo case. (light theme)" loading="lazy"><figcaption>The Summary screen for the built-in demo case. The answer comes first.</figcaption></figure>
+
+<h2 id="features">Features</h2>
+<ul class="plain">
+<li><b>One upload, three tools.</b> Zeek (protocol actions), Suricata (rule alerts) and tshark (packet details) run on the same capture. Zeek includes the CISA ICSNPP parsers for S7comm and EtherNet/IP.</li>
+<li><b>Tool lanes.</b> Every detection shows which tools saw it: Zeek, Suricata, tshark, or the PLC logic. Two independent tools agreeing is shown as corroboration.</li>
+<li><b>Network joined to PLC logic.</b> A Modbus register write is traced to the PLC variable it overlaps, the logic that reads it, and the outputs it drives. The address mapping (wire address N is <code>%MW N</code>) is shown as an assumption, not a fact.</li>
+<li><b>One flow.</b> Assets, Communication, Detections, Evidence, Report. Each step says which question it answers.</li>
+<li><b>Two reading modes.</b> Summary for the story, Investigator for the detail, over the same facts. Dark and light themes.</li>
+<li><b>Evidence you can defend.</b> Every file is fingerprinted with SHA-256. Each detection links to the file, the line and the packets behind it. The report downloads as one offline HTML file with no scripts.</li>
+<li><b>Honest limits.</b> Missing tools, capture loss, ambiguous hardware addresses and files that were not analyzed are listed under "What we could not verify". ATT&amp;CK for ICS techniques are candidates, never verdicts.</li>
+<li><b>Demo without hardware.</b> A built-in pump station capture with a rogue device runs with one button.</li>
+</ul>
+
+<h2 id="what-it-is-not">What it is not</h2>
+<ul class="plain">
+<li>It does not capture live traffic. It analyzes files you give it.</li>
+<li>It does not give verdicts. A capture cannot show whether a command was authorized.</li>
+<li>It does not replace Zeek, Suricata or tshark. It wraps them and compares what they report.</li>
+<li>It is not a multi-user server. It binds to loopback and is built for one analyst on one machine.</li>
+</ul>
+
+<h2 id="license">License</h2>
+<p>MIT. The full text is in <a href="https://github.com/Ani07-05/rehub-engine/blob/main/LICENSE">LICENSE</a> in the repository. Zeek, Suricata, tshark and the CISA ICSNPP plugins keep their own licenses inside the image.</p>
+
+<h2 id="changelog">Changelog</h2>
+<p>ReHub v2 is pre-release. The version in the package is 0.2.0 and there are no tagged releases yet. What exists today:</p>
+<div class="tablewrap"><table><thead><tr><th>Area</th><th>State</th></tr></thead><tbody><tr><td>Engine</td><td>Sniffing by content, hashing, safe unpacking of zip, tar and gzip, adapters for Zeek, Suricata and tshark, correlation, ATT&amp;CK candidates, PLC analysis and register linking.</td></tr><tr><td>Interface</td><td>Web UI with a start screen that checks the tools, a progress flow, Summary and Investigator modes, detail views with evidence line viewer, offline report. Dark and light themes.</td></tr><tr><td>Packaging</td><td>Hardened two-container Compose stack, self-contained installer, multi-architecture image (amd64 and arm64) published to GHCR by CI.</td></tr><tr><td>Not yet</td><td>Syslog, CSV and tshark JSON are stored but not analyzed. Comparing two captures (the v1 baseline feature) is not rebuilt. Tool versions are not yet written into each record.</td></tr></tbody></table></div>
+<p>The full commit history is in the <a href="https://github.com/Ani07-05/rehub-engine/commits/main">repository</a>.</p>
+
+    <nav class="pn" aria-label="Pages"><a class="next" href="/docs/install.html">Next: Install</a></nav>
+    <p class="status" id="copied" role="status" aria-live="polite"></p>
+  </main>
+</div>
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>

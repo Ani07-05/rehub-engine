@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Usage - ReHub docs</title>
+<meta name="description" content="How to run an investigation in the ReHub UI and from the command line, with screenshots.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <div class="top-in">
+    <a class="top-name" href="/">ReHub</a>
+    <a class="top-link" href="/docs/">Docs</a>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+<div class="docs">
+  <nav class="docs-nav" aria-label="Documentation"><a href="/docs/index.html">Overview</a><a href="/docs/install.html">Install</a><a href="/docs/usage.html" aria-current="page">Usage</a><a href="/docs/reference.html">Reference</a><a href="/docs/architecture.html">How it works</a><ul class="docs-toc" aria-label="On this page"><li><a href="#start">Start an investigation</a></li><li><a href="#progress">Watch it work</a></li><li><a href="#summary">Summary</a></li><li><a href="#investigator">Investigator</a></li><li><a href="#themes">Themes and small screens</a></li><li><a href="#cli">Command line</a></li></ul></nav>
+  <main id="content" class="doc">
+<h1>Usage</h1>
+<p class="lead">Use the web UI for investigations, or the <code>rehub</code> command for scripted runs. Both produce the same record.</p>
+
+<h2 id="start">Start an investigation</h2>
+<p>Drop evidence on the start page, or press <b>Choose files</b>. A packet capture, Zeek logs, Suricata alerts, PLC project files, or a zip or tar of these all work. Several files can go into one investigation.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/start.webp" width="1280" height="1080" alt="The ReHub start page with a drop zone and a Try the demo button." loading="lazy"><figcaption>The start page. Nothing leaves the machine.</figcaption></figure>
+<p>For each PLC file you can type the controller IP it belongs to. ReHub uses that to link network writes to the program. Then press <b>Analyze</b>.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/files-chosen.webp" width="1280" height="760" alt="Three files chosen, with a controller IP typed for pump.st." loading="lazy"><figcaption>Three files chosen. The controller IP for pump.st is 10.0.0.20.</figcaption></figure>
+<p>No evidence handy? Press <b>Try the demo</b>. It analyzes a built-in synthetic pump station capture with a rogue device. The same files are in <code>samples/</code> in the repository, one of each evidence type.</p>
+
+<h2 id="progress">Watch it work</h2>
+<p>While the tools run, the flow shows the pipeline: evidence goes to Zeek, Suricata and tshark, then to the ReHub engine, then to the five stages you will read.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/progress.webp" width="1280" height="820" alt="The analyzing screen, with Zeek done and Suricata and tshark working." loading="lazy"><figcaption>Mid-run. Zeek has finished, Suricata and tshark are still working.</figcaption></figure>
+
+<h2 id="summary">Summary</h2>
+<p>Summary is the condensed view for someone who needs the story. It opens with what happened, then the key detections, each with its tool lanes (filled means that tool saw it), then the five-stage flow.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/summary.webp" width="1280" height="1050" alt="The Summary screen." loading="lazy"><img class="only-light" src="/img/docs/summary-light.webp" width="1280" height="1050" alt="The Summary screen. (light theme)" loading="lazy"><figcaption>Summary, top of the page.</figcaption></figure>
+<figure class="frame"><img class="only-dark" src="/img/docs/summary-flow.webp" width="1280" height="1000" alt="The lower half of Summary: the flow list and what could not be verified." loading="lazy"><figcaption>Further down: the flow stages and the limits of this analysis.</figcaption></figure>
+
+<h2 id="investigator">Investigator</h2>
+<p>Switch to Investigator in the header to walk the flow stage by stage. Each stage names the question it answers.</p>
+<h3>Assets: what devices are on this network?</h3>
+<p>Every device with its IP, a MAC address and vendor where known, its role (client or controller), and the PLC program matched to it. MAC attribution uses ARP replies first. Traffic through a router shows the router's MAC, and ReHub says so instead of guessing.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/assets.webp" width="1280" height="620" alt="The Assets stage listing six devices." loading="lazy"><figcaption>Assets.</figcaption></figure>
+<h3>Communication: who talks to whom?</h3>
+<p>Clients on the left, controllers on the right. A dashed colored line means a detection was raised on that conversation. Select a row and <b>Show packets</b> for the packets behind it.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/communication.webp" width="1280" height="1000" alt="The Communication map for the demo case." loading="lazy"><figcaption>Communication. The dashed lines are the rogue device's conversations.</figcaption></figure>
+<h3>Detections: what looks wrong?</h3>
+<p>Each detection has a severity (never shown by color alone), the tools that saw it, the ATT&amp;CK for ICS candidates, the effect on the PLC program, and the evidence.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/detections.webp" width="1280" height="1500" alt="A detection detail view for a Modbus write." loading="lazy"><figcaption>A detection. The Effect on the PLC program section joins the network write to the program logic.</figcaption></figure>
+<h3>Evidence: what proves it?</h3>
+<p><b>Show source line</b> opens the exact line in the tool output, with its neighbors. <b>Download file</b> gives the original file. Evidence is only ever served as a download, never rendered.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/evidence-viewer.webp" width="1280" height="700" alt="The evidence line viewer showing a Zeek log line." loading="lazy"><figcaption>The source line behind a detection, in context.</figcaption></figure>
+<figure class="frame"><img class="only-dark" src="/img/docs/evidence.webp" width="1280" height="1060" alt="The Evidence stage listing every file with its hash." loading="lazy"><figcaption>Evidence: every file with its kind, size and SHA-256.</figcaption></figure>
+<h3>Report: what do I hand to others?</h3>
+<p>A single document with the answer, the detections, the assets and the limits. Print it, or download it as one offline HTML file with no scripts.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/report.webp" width="1280" height="1000" alt="The Report stage." loading="lazy"><figcaption>The report.</figcaption></figure>
+
+<h2 id="themes">Themes and small screens</h2>
+<p>The sun and moon button switches between dark and light. The choice is remembered in the browser. The layout works down to a phone width.</p>
+<figure class="frame"><img class="only-dark" src="/img/docs/summary-mobile.webp" width="390" height="1500" alt="The Summary screen at phone width." loading="lazy"><figcaption>Summary at 390 px wide.</figcaption></figure>
+
+<h2 id="cli">Command line</h2>
+<p>The <code>rehub</code> command is inside the image. Global option: <code>--data DIR</code> (default <code>$REHUB_DATA</code> or <code>~/.rehub</code>) is where investigations are stored.</p>
+<div class="tablewrap"><table><thead><tr><th>Command</th><th>Parameters</th></tr></thead><tbody><tr><td><code>rehub analyze FILES...</code></td><td><code>--plc-ip NAME=IP</code> (repeatable) tells ReHub which controller a PLC file belongs to. <code>--timeout S</code> limits each tool run (default 1800).</td></tr><tr><td><code>rehub show ID</code></td><td>Print a stored investigation.</td></tr><tr><td><code>rehub doctor</code></td><td>Check storage and the three tools. <code>--quick</code> skips the self-test on the built-in capture.</td></tr><tr><td><code>rehub serve</code></td><td>Run the web UI and API. <code>--host H</code> (default <code>$REHUB_HOST</code> or 127.0.0.1), <code>--port P</code> (default <code>$REHUB_PORT</code> or 8080), <code>--auth</code>.</td></tr><tr><td><code>rehub token</code></td><td>Print the access token. <code>--rotate</code> makes a new one.</td></tr><tr><td><code>rehub gateway</code></td><td>The TCP forwarder used by the Compose stack. <code>--listen H:P</code>, <code>--upstream H:P</code>.</td></tr></tbody></table></div>
+<h3>Example: analyze a capture and a PLC file</h3>
+<p>Run it in a throwaway container with no network. Evidence is mounted read-only; results go to <code>./data</code>.</p>
+<div class="cmd"><pre><code id="c5">docker run --rm --network none --read-only --tmpfs /tmp --user &quot;$(id -u):$(id -g)&quot; \
+  -v &quot;$PWD/samples:/in:ro&quot; -v &quot;$PWD/data:/data&quot; ghcr.io/ani07-05/rehub-engine:latest \
+  rehub --data /data analyze /in/capture/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20</code></pre><button class="btn small" type="button" data-copy="c5">Copy</button></div>
+<p>It prints the investigation id. Read it back with <code>rehub --data /data show ID</code>.</p>
+<h3>Example: run the stack with sign-in</h3>
+<div class="cmd"><pre><code id="c6">sh install.sh --auth</code></pre><button class="btn small" type="button" data-copy="c6">Copy</button></div>
+<p>Sign-in is off by default because ReHub is local only. With <code>--auth</code> a sign-in link is printed. The token becomes an HttpOnly cookie.</p>
+
+    <nav class="pn" aria-label="Pages"><a class="prev" href="/docs/install.html">Previous: Install</a><a class="next" href="/docs/reference.html">Next: Reference</a></nav>
+    <p class="status" id="copied" role="status" aria-live="polite"></p>
+  </main>
+</div>
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
