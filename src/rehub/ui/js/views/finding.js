@@ -1,7 +1,7 @@
-import { h, mount } from "../dom.js";
+import { h } from "../dom.js";
 import { api } from "../api.js";
 import { ATTACK_NOTE, confidenceText, deviceText, parseRef, plainMeaning, timeText, toolList } from "../narrate.js";
-import { codeBlock, evidenceBySha, laneBig, sevBadge, showLines, showPackets } from "./shared.js";
+import { evidenceBySha, laneBig, sevBadge, showLines, showPackets } from "./shared.js";
 
 export function plcImpact(impact) {
   const readerLines = impact.readers.map((r) => {
@@ -104,6 +104,6 @@ export function renderFinding(record, d, ctx) {
     attrs.length && d.tools.includes("plc")
       ? h("section", { class: "stack" }, h("h3", {}, "Why it was flagged"), h("p", {}, d.attrs.detail || ""))
       : null,
-    h("section", { class: "stack" }, h("h3", {}, "Evidence"), h("ul", { class: "list" }, d.refs.map((r) => refRow(local, r)))),
+    h("section", { class: "stack" }, h("h3", {}, "Evidence"), h("ul", { class: "list evlist" }, d.refs.map((r) => refRow(local, r)))),
   );
 }

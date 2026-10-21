@@ -323,3 +323,10 @@ def test_status_exposes_tool_states(client: Client) -> None:
     assert done["status"]["stage"] == "done"
     _, listing = client.json("GET", "/api/investigations")
     assert listing["investigations"][0]["stage"] == "done"
+
+
+def test_packaged_demo_files_match_the_fixtures() -> None:
+    from rehub.api import DEMO_DIR
+
+    assert (DEMO_DIR / "ot-demo.pcap").read_bytes() == PCAP.read_bytes()
+    assert (DEMO_DIR / "pump.st").read_bytes() == PUMP.read_bytes()

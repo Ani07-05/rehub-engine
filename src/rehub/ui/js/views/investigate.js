@@ -1,7 +1,7 @@
-import { h, mount, fmtBytes, fmtTime, plural, shortHash } from "../dom.js";
+import { h, fmtBytes, plural, shortHash } from "../dom.js";
 import { chevron } from "../icons.js";
 import { api } from "../api.js";
-import { KIND_NAMES, flowStages, deviceLabel, isDerived, lanes, severityWord, timeText } from "../narrate.js";
+import { KIND_NAMES, flowStages, isDerived, severityWord, timeText } from "../narrate.js";
 import { renderFinding } from "./finding.js";
 import { flowMap } from "./flowmap.js";
 import { laneMini, sevBadge, showLines, showPackets } from "./shared.js";

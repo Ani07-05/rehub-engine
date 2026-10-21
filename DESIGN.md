@@ -1,36 +1,43 @@
 ---
 name: ReHub
-description: A black, thin-outline investigation surface that answers in plain language first and opens every claim down to its evidence.
+description: A thin-outline investigation surface, black by default with a light theme, that answers in plain language first and opens every claim down to its evidence.
 colors:
   ground: "#000000"
   text: "#f4f4f4"
-  text-secondary: "#b8b8b8"
-  text-tertiary: "#8a8a8a"
-  line: "rgba(255, 255, 255, 0.16)"
-  line-strong: "rgba(255, 255, 255, 0.34)"
-  line-soft: "rgba(255, 255, 255, 0.08)"
+  text-secondary: "#c4c4c4"
+  text-tertiary: "#9a9a9a"
+  line: "rgba(255, 255, 255, 0.18)"
+  line-strong: "rgba(255, 255, 255, 0.36)"
+  line-soft: "rgba(255, 255, 255, 0.09)"
   severity-high: "#ff6b5e"
   severity-medium: "#f2b24a"
   severity-low: "#9aa3ad"
-  scrollbar-thumb: "#333333"
-  scrollbar-track-hover: "#3a3a3a"
+  hover: "rgba(255, 255, 255, 0.05)"
+  selected-tint: "rgba(255, 255, 255, 0.1)"
+  scrollbar-thumb: "#3a3a3a"
   paper-ground: "#ffffff"
   paper-text: "#111111"
   paper-text-secondary: "#444444"
   paper-text-tertiary: "#666666"
+  paper-line: "rgba(0, 0, 0, 0.18)"
+  paper-line-strong: "rgba(0, 0, 0, 0.42)"
+  paper-line-soft: "rgba(0, 0, 0, 0.09)"
+  paper-hover: "rgba(0, 0, 0, 0.04)"
+  paper-selected-tint: "rgba(0, 0, 0, 0.07)"
+  paper-scrollbar-thumb: "#c6c6c6"
   paper-severity-high: "#b3261e"
   paper-severity-medium: "#8a5a00"
   paper-severity-low: "#4a5560"
 typography:
   headline:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.75rem"
+    fontSize: "2rem"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.02em"
   answer:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.375rem"
+    fontSize: "1.5rem"
     fontWeight: 500
     lineHeight: 1.45
     letterSpacing: "-0.01em"
@@ -42,17 +49,17 @@ typography:
     letterSpacing: "-0.04em"
   title:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "1.125rem"
-    fontWeight: 600
+    fontSize: "1.1875rem"
+    fontWeight: 650
     lineHeight: 1.3
   body:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.9375rem"
+    fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
-    fontSize: "0.8125rem"
+    fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.4
   map-label:
@@ -62,7 +69,7 @@ typography:
     lineHeight: 1.2
   data:
     fontFamily: "ui-monospace, SF Mono, Menlo, Consolas, monospace"
-    fontSize: "0.8125rem"
+    fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.55
 rounded:
@@ -132,8 +139,8 @@ A restrained, near-monochrome palette. Colour is a semantic signal, never decora
 
 ### Neutral
 - **Ground black** (`#000000`): the page and every panel. Panels are distinguished by outline, not fill.
-- **Secondary text** (`#b8b8b8`) and **tertiary text** (`#8a8a8a`): supporting copy and unlit states; both pass 4.5:1 on black.
-- **Hairline** (`rgba(255,255,255,0.16)`), **strong hairline** (`0.34`), **soft hairline** (`0.08`): default outline, hover/selected outline, table row dividers.
+- **Secondary text** (`#c4c4c4`) and **tertiary text** (`#9a9a9a`): supporting copy and unlit states; both pass 4.5:1 on black.
+- **Hairline** (`rgba(255,255,255,0.18)`), **strong hairline** (`0.36`), **soft hairline** (`0.09`): default outline, hover/selected outline, table row dividers.
 
 ### State
 - **Severity high** (`#ff6b5e`) with a filled triangle, **medium** (`#f2b24a`) with a filled square, **low** (`#9aa3ad`) with a filled circle. Always shape plus word plus colour.
@@ -147,23 +154,23 @@ A restrained, near-monochrome palette. Colour is a semantic signal, never decora
 
 **Display / body / label:** system UI sans (`system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial`). **Data:** `ui-monospace, SF Mono, Menlo, Consolas`.
 
-A fixed rem scale (no fluid type) with a ~1.2 step: 0.75 / 0.8125 / 0.9375 / 1.125 / 1.375 / 1.75rem. Body measure stays at or under 62ch.
+A fixed rem scale (no fluid type) with a ~1.2 step: 0.8 / 0.875 / 1 / 1.1875 / 1.5 / 2rem on a 16px base, line-height 1.55. Body measure stays at or under 62ch.
 
 ### Hierarchy
 - **Wordmark** (700, clamp 4.5 to 12rem, -0.04em): the opening screen only. The one fluid, oversized type in the system; nowhere else breaks the fixed scale.
-- **Headline** (600, 1.75rem, -0.02em): page statements such as "What happened".
-- **Answer** (500, 1.375rem, 1.45): the plain-language paragraphs. The largest text on screen, because the answer is the point.
-- **Title** (600, 1.125rem): section headings and finding titles.
-- **Body** (400, 0.9375rem): running text.
-- **Label** (500, 0.8125rem): table headers, meta lines, chips.
+- **Headline** (600, 2rem, -0.02em): page statements such as "What happened".
+- **Answer** (500, 1.5rem, 1.5): the plain-language paragraphs. The largest text on screen, because the answer is the point.
+- **Title** (650, 1.1875rem): section headings and finding titles.
+- **Body** (400, 1rem): running text.
+- **Label** (500, 0.875rem): table headers, meta lines, chips.
 - **Map label** (400, 10.5px): node captions and edge labels inside the SVG flow map only.
-- **Data** (mono, 0.8125rem): IPs, hashes, code lines, packet fields; tabular numerals.
+- **Data** (mono, 0.875rem): IPs, hashes, code lines, packet fields; tabular numerals.
 
 ### Named Rules
 **The Mono-Means-Data Rule.** Monospace is only for things a person might copy: addresses, hashes, variable names, code. Never as a "technical" costume on labels.
 
-### Paper theme (print and downloaded report)
-The report switches the same system to a light "paper" theme for print and for the standalone HTML download: ground `#ffffff`, text `#111111`, secondary `#444444`, tertiary `#666666`, and darker severity colours (`#b3261e`, `#8a5a00`, `#4a5560`) that keep 4.5:1 on white. Structure is still hairline outlines; shapes and words still carry severity. The downloaded file has no scripts and a CSP that allows nothing but its own styles.
+### Light theme (also print and the downloaded report)
+Black is the default and the identity. A light theme is one click away (a sun and moon button in the top bar and on the opening screen) and is remembered in the browser; it never follows the system setting on its own. It is the same system on a white ground: ground `#ffffff`, text `#111111`, secondary `#444444`, tertiary `#666666`, hairlines as black at 18, 42 and 9 percent, and darker severity colours (`#b3261e`, `#8a5a00`, `#4a5560`) that keep 4.5:1 on white. The primary button inverts to black. Structure is still hairline outlines and severity is still shape plus word plus colour. Print and the standalone report download use this theme; the downloaded file has no scripts and a CSP that allows nothing but its own styles.
 
 ## Layout
 

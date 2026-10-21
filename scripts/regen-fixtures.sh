@@ -3,6 +3,8 @@ set -eu
 cd "$(dirname "$0")/.."
 out=$(mktemp -d)
 uv run python fixtures/gen_ot_pcap.py fixtures/ot-demo.pcap
+cp fixtures/ot-demo.pcap src/rehub/data/demo/ot-demo.pcap
+cp fixtures/plc/pump.st src/rehub/data/demo/pump.st
 docker run --rm --network none --user "$(id -u):$(id -g)" \
   -v "$PWD/fixtures:/in:ro" -v "$out:/out" rehub:dev python3 -c "
 from pathlib import Path

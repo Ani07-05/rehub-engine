@@ -128,7 +128,7 @@ export function reportTab(record) {
   const note = h("span", { class: "small muted", role: "status" });
   return h(
     "div",
-    { class: "stack" },
+    { class: "stack report-wrap" },
     h("div", { class: "report-toolbar" },
       h("button", { class: "btn primary", type: "button", onclick: () => window.print() }, "Print or save as PDF"),
       h("button", { class: "btn", type: "button", onclick: () => download(record, note) }, "Download HTML report"),
