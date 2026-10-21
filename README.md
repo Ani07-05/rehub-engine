@@ -2,7 +2,7 @@
 
 Local, offline investigation engine for OT network evidence. One upload runs Zeek, Suricata and tshark, correlates their output with PLC logic files, and keeps tool attribution on every finding.
 
-Status: work in progress. Engine and CLI work; API, UI and installer are not built yet. See `docs/STATUS.md`.
+Status: work in progress. Engine, CLI, API and web UI work; report export and the installer are not built yet. See `docs/STATUS.md`.
 
 ## What it does today
 
@@ -20,6 +20,14 @@ With the tool image built (`docker build -f docker/Dockerfile -t rehub:dev .`):
 docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g)" \
   -v "$PWD/fixtures:/in:ro" -v "$PWD/data:/data" rehub:dev \
   rehub --data /data analyze /in/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20
+```
+
+Or run the web UI (open http://localhost:8080):
+
+```sh
+docker run --rm -p 127.0.0.1:8080:8080 -e REHUB_HOST=0.0.0.0 --read-only --tmpfs /tmp \
+  --cap-drop ALL --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+  -v "$PWD/data:/data" rehub:dev rehub --data /data serve
 ```
 
 ## Develop
@@ -47,6 +55,8 @@ src/rehub/
   adapters/              tool output to common Event schema
   communityid.py         Community ID v1
   pipeline.py cli.py     upload to investigation, persistence, CLI
+  api.py drill.py        local HTTP API and evidence drill-down
+  ui/                    web UI, plain HTML/CSS/JS, no build step
   correlate.py model.py  assets, flows, detections
   plc/                   PLC project parsing, analysis, register linking
 docker/                  tool image

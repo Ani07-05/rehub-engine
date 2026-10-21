@@ -28,10 +28,8 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 
 ## Next, in order
 
-1. API (upload, status, results, evidence download) over the existing pipeline. Results are `record.json` per investigation under `$REHUB_DATA/investigations/<id>/`.
-2. (done) pipeline runner.
-3. UI: assets, flow graph, detections, evidence drill-down, PLC impact panel. Plain HTML and JS.
-4. Report export with hashes, caveats and ATT&CK note.
+1. (done) pipeline runner, API, UI (`rehub serve`). Design context lives in `PRODUCT.md` and `DESIGN.md`; the surface brief and direction contract are in `.impeccable/surfaces/`.
+2. Report export (a Report tab in the UI plus a downloadable file) with hashes, caveats and the ATT&CK note.
 5. Hardened compose (internal network plus gateway so the engine has no egress, `cap_drop: ALL`, read-only root, memory and pid limits), `install.sh`, publish image to GHCR.
 6. Emerging Threats rules bundle after the license check.
 7. Test on real ICS pcaps. The only pcap so far is synthetic.
