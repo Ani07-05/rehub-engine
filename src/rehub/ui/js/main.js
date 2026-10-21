@@ -1,6 +1,7 @@
 import { h, mount } from "./dom.js";
 import { api } from "./api.js";
 import { brandMark } from "./icons.js";
+import { themeButton } from "./theme.js";
 import { renderHome } from "./views/home.js";
 import { renderSplash } from "./views/splash.js";
 import { renderSummary } from "./views/summary.js";
@@ -41,7 +42,8 @@ function topbar(record, mode) {
   if (authOn) {
     kids.push(h("button", { class: "btn ghost", type: "button", onclick: async () => { try { await api.logout(); } finally { location.assign("/"); } } }, "Sign out"));
   }
-  mount(bar, kids);
+  kids.push(themeButton());
+  mount(bar, h("div", { class: "bar-in" }, kids));
 }
 
 function failure(err) {

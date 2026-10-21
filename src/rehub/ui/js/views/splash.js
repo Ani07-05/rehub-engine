@@ -1,6 +1,7 @@
 import { h, mount } from "../dom.js";
 import { api } from "../api.js";
 import { mark } from "../marks.js";
+import { themeButton } from "../theme.js";
 import { chainStatus, serviceChain } from "../narrate.js";
 
 const STAGGER_MS = 260;
@@ -72,6 +73,6 @@ export function renderSplash(root, enter) {
     }
   };
   again.addEventListener("click", run);
-  mount(root, h("div", { class: "splash" }, h("h1", { class: "wordmark" }, "REHUB"), chain, problems, h("p", {}, again)));
+  mount(root, h("div", { class: "splash" }, h("div", { class: "splash-tools" }, themeButton()), h("h1", { class: "wordmark" }, "REHUB"), chain, problems, h("p", {}, again)));
   run();
 }
