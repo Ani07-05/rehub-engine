@@ -1,0 +1,48 @@
+name: rehub
+
+x-hardened: &hardened
+  image: ${REHUB_IMAGE:-ghcr.io/ani07-05/rehub-engine:latest}
+  pull_policy: missing
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+
+services:
+  engine:
+    <<: *hardened
+    command: ["rehub", "--data", "/data", "serve"]
+    environment:
+      REHUB_HOST: 0.0.0.0
+      REHUB_PORT: "8080"
+      REHUB_TOKEN: ${REHUB_TOKEN:-}
+      REHUB_PUBLIC_URL: http://localhost:${REHUB_PORT:-8080}
+    volumes:
+      - rehub-data:/data
+    tmpfs:
+      - /tmp:size=512m
+    networks: [internal]
+    mem_limit: ${REHUB_MEMORY:-4g}
+    pids_limit: 512
+
+  gateway:
+    <<: *hardened
+    command: ["rehub", "gateway", "--listen", "0.0.0.0:8080", "--upstream", "engine:8080"]
+    ports:
+      - "127.0.0.1:${REHUB_PORT:-8080}:8080"
+    tmpfs:
+      - /tmp:size=16m
+    networks: [internal, edge]
+    mem_limit: 256m
+    pids_limit: 128
+    depends_on:
+      engine:
+        condition: service_healthy
+
+networks:
+  internal:
+    internal: true
+  edge: {}
+
+volumes:
+  rehub-data: {}

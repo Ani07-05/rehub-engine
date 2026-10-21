@@ -1,0 +1,140 @@
+#!/bin/sh
+# ReHub installer. Runs ReHub in Docker: an engine on a network with no way out, and a small
+# gateway that publishes the web UI on 127.0.0.1 only. Read it before you run it.
+#
+#   install.sh [--local] [--auth] [--port N] [--no-open]
+#   install.sh --update | --status | --uninstall [--purge]
+set -eu
+
+RAW=${REHUB_RAW:-https://raw.githubusercontent.com/Ani07-05/rehub-engine/main}
+HOME_DIR=${REHUB_HOME:-$HOME/.rehub}
+PORT=${REHUB_PORT:-8080}
+MODE=install
+LOCAL=0
+AUTH=0
+OPEN=1
+PURGE=0
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'rehub: %s\n' "$*" >&2; exit 1; }
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --local) LOCAL=1 ;;
+    --auth) AUTH=1 ;;
+    --no-open) OPEN=0 ;;
+    --port) shift; [ $# -gt 0 ] || die "--port needs a number"; PORT=$1 ;;
+    --update) MODE=update ;;
+    --status) MODE=status ;;
+    --uninstall) MODE=uninstall ;;
+    --purge) PURGE=1 ;;
+    -h|--help) sed -n '2,7p' "$0"; exit 0 ;;
+    *) die "unknown option: $1" ;;
+  esac
+  shift
+done
+case "$PORT" in ''|*[!0-9]*) die "port must be a number" ;; esac
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo "")
+CHECKOUT=""
+if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/../compose.yml" ]; then CHECKOUT=$(cd "$SCRIPT_DIR/.." && pwd); fi
+
+command -v docker >/dev/null 2>&1 || die "Docker is not installed. Install Docker Desktop or Docker Engine first."
+docker compose version >/dev/null 2>&1 || die "Docker Compose v2 is missing. Update Docker."
+docker info >/dev/null 2>&1 || die "Docker is installed but not running. Start it and try again."
+
+mkdir -p "$HOME_DIR"
+ENV_FILE="$HOME_DIR/.env"
+COMPOSE_FILE="$HOME_DIR/compose.yml"
+OVERRIDE=""
+
+if [ "$LOCAL" = 1 ]; then
+  [ -n "$CHECKOUT" ] || die "--local must be run from a ReHub checkout (scripts/install.sh)"
+  COMPOSE_FILE="$CHECKOUT/compose.yml"
+  OVERRIDE="$CHECKOUT/docker/compose.build.yml"
+elif [ "$MODE" = install ] || [ "$MODE" = update ]; then
+  if [ -n "$CHECKOUT" ]; then
+    cp "$CHECKOUT/compose.yml" "$COMPOSE_FILE"
+  else
+    command -v curl >/dev/null 2>&1 || die "curl is needed to download the compose file"
+    curl -fsSL "$RAW/compose.yml" -o "$COMPOSE_FILE.tmp" || die "could not download $RAW/compose.yml"
+    if [ -n "${REHUB_COMPOSE_SHA256:-}" ]; then
+      actual=$(sha256sum "$COMPOSE_FILE.tmp" 2>/dev/null | cut -d' ' -f1 || shasum -a 256 "$COMPOSE_FILE.tmp" | cut -d' ' -f1)
+      [ "$actual" = "$REHUB_COMPOSE_SHA256" ] || { rm -f "$COMPOSE_FILE.tmp"; die "compose file checksum mismatch"; }
+    fi
+    mv "$COMPOSE_FILE.tmp" "$COMPOSE_FILE"
+  fi
+fi
+
+existing() { [ -f "$ENV_FILE" ] && sed -n "s/^$1=//p" "$ENV_FILE" | tail -n 1 || true; }
+
+compose() {
+  if [ -n "$OVERRIDE" ]; then
+    docker compose -p rehub --env-file "$ENV_FILE" -f "$COMPOSE_FILE" -f "$OVERRIDE" "$@"
+  else
+    docker compose -p rehub --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+  fi
+}
+
+wait_healthy() {
+  cid=$(compose ps -q gateway)
+  [ -n "$cid" ] || die "the gateway did not start. Run: docker compose -p rehub logs"
+  i=0
+  while [ $i -lt 90 ]; do
+    state=$(docker inspect --format '{{.State.Health.Status}}' "$cid" 2>/dev/null || echo starting)
+    [ "$state" = healthy ] && return 0
+    i=$((i + 1)); sleep 1
+  done
+  die "ReHub did not become healthy in 90 seconds. Run: docker compose -p rehub logs"
+}
+
+new_token() {
+  head -c 24 /dev/urandom | base64 | tr '+/' '-_' | tr -d '=\n'
+}
+
+case "$MODE" in
+  status)
+    [ -f "$ENV_FILE" ] || die "ReHub is not installed in $HOME_DIR"
+    compose ps
+    exit 0 ;;
+  uninstall)
+    [ -f "$ENV_FILE" ] || { say "Nothing to remove in $HOME_DIR"; exit 0; }
+    if [ "$PURGE" = 1 ]; then compose down --volumes; say "Removed ReHub and all its investigations."
+    else compose down; say "Stopped ReHub. Your investigations are kept. Add --purge to delete them."; fi
+    exit 0 ;;
+esac
+
+TOKEN=$(existing REHUB_TOKEN)
+PORT_SAVED=$(existing REHUB_PORT)
+[ "$PORT" = 8080 ] && [ -n "$PORT_SAVED" ] && PORT=$PORT_SAVED
+if [ "$AUTH" = 1 ] && [ -z "$TOKEN" ]; then TOKEN=$(new_token); fi
+{
+  [ -n "${REHUB_IMAGE:-}" ] && echo "REHUB_IMAGE=$REHUB_IMAGE"
+  echo "REHUB_PORT=$PORT"
+  echo "REHUB_TOKEN=$TOKEN"
+} > "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+
+if [ "$MODE" = update ]; then
+  say "Updating ReHub..."
+  compose pull
+fi
+say "Starting ReHub (the first start downloads the image)..."
+if [ "$LOCAL" = 1 ]; then compose up -d --build; else compose up -d; fi
+wait_healthy
+
+say ""
+say "Checking that everything works..."
+if compose exec -T engine rehub --data /data doctor; then CHECK=ok; else CHECK=failed; fi
+
+URL="http://localhost:$PORT/"
+[ -n "$TOKEN" ] && URL="$URL?token=$TOKEN"
+say ""
+if [ "$CHECK" = ok ]; then say "ReHub is ready."; else say "ReHub is running, but a check failed (see above)."; fi
+say "Open: $URL"
+say "Stop it: $0 --uninstall    Update it: $0 --update"
+if [ "$OPEN" = 1 ]; then
+  if command -v open >/dev/null 2>&1; then open "$URL" >/dev/null 2>&1 || true
+  elif command -v xdg-open >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then xdg-open "$URL" >/dev/null 2>&1 || true
+  fi
+fi

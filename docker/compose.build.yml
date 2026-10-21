@@ -1,0 +1,8 @@
+services:
+  engine:
+    image: rehub:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+  gateway:
+    image: rehub:local
