@@ -115,6 +115,39 @@ export function headline(record) {
   return out;
 }
 
+function decodeRegisters(data) {
+  const out = [];
+  for (let i = 0; i + 1 < data.length; i += 2) out.push(((data.charCodeAt(i) & 0xff) << 8) | (data.charCodeAt(i + 1) & 0xff));
+  return out;
+}
+
+export function writeDetail(d) {
+  const a = d.attrs || {};
+  const raw = a["modbus.request.function_raw"] || "";
+  const func = a.func || "";
+  const address = a.address || a["modbus.request.write.address"];
+  const write = /WRITE/.test(func) || ["5", "6", "15", "16"].includes(raw);
+  const register = /REGISTER/.test(func) || raw === "6" || raw === "16";
+  const coil = /COIL/.test(func) || raw === "5" || raw === "15";
+  if (!write || !(register || coil) || !/^\d+$/.test(address || "")) return null;
+  const start = Number(address);
+  const qty = Number(a.quantity || a["modbus.request.write.quantity"] || 1) || 1;
+  let values = null;
+  try {
+    const parsed = JSON.parse(a.request_values || "");
+    if (Array.isArray(parsed)) values = parsed.map(String);
+  } catch {}
+  const data = a["modbus.request.write.data"];
+  if (!values && data != null) {
+    if (/^\d+$/.test(data)) values = [data];
+    else if (register) values = decodeRegisters(data).map(String);
+  }
+  const noun = register ? "register" : "coil";
+  const target = qty > 1 ? `${noun}s ${start} to ${start + qty - 1}` : `${noun} ${start}`;
+  const fn = func || (raw ? `function ${raw}` : "");
+  return { target, values, fn };
+}
+
 export function impactLine(d) {
   const impacts = d.plc || [];
   if (!impacts.length) return "";
@@ -258,7 +291,7 @@ export function flowStages(record) {
     { id: "communication", label: "Communication", count: flows.length, question: "Who talks to whom?", did: "Joined the Zeek, Suricata and tshark records of the same conversation into one.", result: `${count(flows.length, "conversation")}${protocols.length ? ` over ${protocols.slice(0, 3).join(", ")}` : ""}` },
     { id: "detections", label: "Detections", count: detections.length, question: "What looks wrong?", did: "Merged rule alerts and control commands across tools, and read the PLC logic they touch.", result: `${count(detections.length, "detection")}${detections.length ? `, ${confirmed} confirmed by two tools` : ""}` },
     { id: "evidence", label: "Evidence", count: record.evidence.length, question: "What proves it?", did: "Fingerprinted every file and linked each detection to the file, line and packets behind it.", result: `${count(record.evidence.length, "file")} fingerprinted` },
-    { id: "report", label: "Report", count: null, question: "What do I hand to others?", did: "Wrote the summary, the gaps and the chain of custody into one document.", result: "Ready to print or download" },
+    { id: "report", label: "Report", count: null, question: "Who needs what?", did: "Wrote the summary, the gaps and the chain of custody into one document.", result: "Ready to print or download" },
   ];
 }
 

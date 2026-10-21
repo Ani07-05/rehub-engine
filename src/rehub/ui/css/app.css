@@ -229,6 +229,9 @@ th.sortable button { background: none; border: 0; padding: 0; font-weight: 600; 
 .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.35rem 1rem; font-size: var(--t-sm); }
 .kv dt { color: var(--text-2); }
 .kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.kv .hl { background: var(--hit); padding: 0.4rem 0.6rem; }
+.kv dt.hl { border-radius: 6px 0 0 6px; color: var(--text); font-weight: 600; }
+.kv dd.hl { border-radius: 0 6px 6px 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem; }
 
 /* code and viewers */
 .code { display: grid; grid-template-columns: max-content 1fr; font: var(--t-sm) / 1.55 var(--mono); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; padding: 0.5rem 0; }
