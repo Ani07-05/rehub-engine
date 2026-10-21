@@ -52,5 +52,8 @@ ENV PATH=/opt/rehub/venv/bin:/usr/local/zeek/bin:/opt/suricata/bin:$PATH \
     REHUB_DATA=/data
 USER rehub
 VOLUME /data
+LABEL org.opencontainers.image.source="https://github.com/Ani07-05/rehub-engine" \
+      org.opencontainers.image.description="ReHub: local OT investigation engine (Zeek, Suricata, tshark and PLC logic)" \
+      org.opencontainers.image.licenses="MIT"
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD ["python3", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('REHUB_PORT', '8080') + '/api/health', timeout=3)"]
