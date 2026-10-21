@@ -35,6 +35,10 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 7. Test on real ICS pcaps. The only pcap so far is synthetic.
 8. Docs, demo script.
 
+## Security model of the web UI
+
+Loopback bind by default, Host allowlist (DNS rebinding), per-install access token (`<data>/.token`, mode 0600, or `REHUB_TOKEN`) exchanged for an HttpOnly SameSite=Strict cookie then redirected so it leaves the URL, Bearer header for scripts, 5 failures per minute lockout, `X-Rehub` header and Origin check on cookie-authenticated mutations, `REHUB_NO_AUTH=1` or `--no-auth` to disable (warned loudly). `rehub token [--rotate]` prints the sign-in link. `/api/health` is the only public API route.
+
 ## Known limits
 
 - `correlate` holds all events in memory; very large captures will hurt.

@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import threading
+import time
 import unicodedata
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -16,6 +17,8 @@ from typing import Any
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from rehub import drill
+from rehub.auth import Auth, cookie_header, load_or_create_token, parse_cookie
+from rehub.doctor import Report, run_doctor
 from rehub.pipeline import (
     RECORD,
     investigation_dir,
@@ -38,8 +41,11 @@ MUTATING = frozenset({"POST", "PUT", "DELETE"})
 UI_DIR = Path(__file__).parent / "ui"
 CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
-    "connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    "connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
+    "form-action 'self'"
 )
+FORM_LIMIT = 4096
+DOCTOR_TTL = 30.0
 
 
 class HttpError(Exception):
@@ -59,6 +65,8 @@ class Config:
     allowed_hosts: frozenset[str] = DEFAULT_ALLOWED_HOSTS
     workers: int = 1
     timeout: float = 1800.0
+    token: str = ""
+    public_url: str = ""
 
     @classmethod
     def from_env(cls, data_dir: Path) -> "Config":
@@ -75,6 +83,8 @@ class Config:
             max_draft_bytes=int(os.environ.get("REHUB_MAX_DRAFT_BYTES", str(16 << 30))),
             allowed_hosts=DEFAULT_ALLOWED_HOSTS | extra,
             workers=int(os.environ.get("REHUB_WORKERS", "1")),
+            token="" if os.environ.get("REHUB_NO_AUTH") == "1" else load_or_create_token(data_dir),
+            public_url=os.environ.get("REHUB_PUBLIC_URL", "").rstrip("/"),
         )
 
 
@@ -107,8 +117,12 @@ class App:
     pool: ThreadPoolExecutor = field(init=False)
     queued: set[str] = field(default_factory=set)
     lock: threading.Lock = field(default_factory=threading.Lock)
+    auth: Auth = field(init=False)
+    last_doctor: Report | None = None
+    doctor_lock: threading.Lock = field(default_factory=threading.Lock)
 
     def __post_init__(self) -> None:
+        self.auth = Auth(self.config.token)
         self.pool = ThreadPoolExecutor(
             max_workers=self.config.workers, thread_name_prefix="rehub-job"
         )
@@ -128,6 +142,19 @@ class App:
                         {"stage": "failed", "detail": "interrupted by restart", "updated": ""}
                     )
                 )
+
+    def doctor(self, force: bool = False) -> dict[str, Any]:
+        with self.doctor_lock:
+            stale = (
+                self.last_doctor is None or time.time() - self.last_doctor.checked_at > DOCTOR_TTL
+            )
+            if force or stale:
+                self.last_doctor = run_doctor(
+                    self.config.data_dir, self.execute, auth_enabled=self.auth.enabled
+                )
+            report = self.last_doctor
+        assert report is not None
+        return {**to_jsonable(report), "status": report.status}
 
     def shutdown(self) -> None:
         self.pool.shutdown(wait=False, cancel_futures=True)
@@ -291,15 +318,80 @@ class Handler(BaseHTTPRequestHandler):
             raise HttpError(400, "JSON object expected")
         return data
 
+    def _bearer_ok(self) -> bool:
+        header = self.headers.get("Authorization", "")
+        return header.startswith("Bearer ") and self.app.auth.check_token(header[7:])
+
+    def _cookie_ok(self) -> bool:
+        return self.app.auth.valid_cookie(parse_cookie(self.headers.get("Cookie")))
+
+    def _authed(self) -> bool:
+        return not self.app.auth.enabled or self._bearer_ok() or self._cookie_ok()
+
+    def _origin_ok(self) -> bool:
+        origin = self.headers.get("Origin")
+        return not origin or host_allowed(urlsplit(origin).netloc, self.app.config.allowed_hosts)
+
     def _guard(self, method: str) -> None:
         if not host_allowed(self.headers.get("Host"), self.app.config.allowed_hosts):
             raise HttpError(403, "host not allowed")
-        if method in MUTATING:
-            if self.headers.get("X-Rehub") != "1":
-                raise HttpError(403, "missing X-Rehub header")
-            origin = self.headers.get("Origin")
-            if origin and not host_allowed(urlsplit(origin).netloc, self.app.config.allowed_hosts):
-                raise HttpError(403, "origin not allowed")
+        if method not in MUTATING or urlsplit(self.path).path == "/login":
+            return
+        if self.app.auth.enabled and self._bearer_ok():
+            return
+        if self.headers.get("X-Rehub") != "1":
+            raise HttpError(403, "missing X-Rehub header")
+        if not self._origin_ok():
+            raise HttpError(403, "origin not allowed")
+
+    def _redirect(self, status: int, location: str, cookie: str | None = None) -> None:
+        self.send_response(status)
+        self.send_header("Location", location)
+        self.send_header("Content-Length", "0")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Referrer-Policy", "no-referrer")
+        if cookie:
+            self.send_header("Set-Cookie", cookie)
+        self.end_headers()
+
+    def _login_page(self, status: int, message: str = "") -> None:
+        html = (UI_DIR / "login.html").read_text()
+        error = f'<p class="callout err" role="alert">{message}</p>' if message else ""
+        self._send(
+            status,
+            html.replace("<!--ERROR-->", error).encode(),
+            "text/html; charset=utf-8",
+            {"Content-Security-Policy": CSP},
+        )
+
+    def _root(self, query: dict[str, list[str]]) -> None:
+        auth = self.app.auth
+        supplied = query.get("token", [""])[0]
+        if supplied:
+            if auth.locked_out():
+                return self._login_page(429, "Too many attempts. Wait a minute and try again.")
+            if auth.check_token(supplied):
+                return self._redirect(302, "/", cookie_header(auth.make_cookie()))
+            auth.record_failure()
+            return self._login_page(401, "That token is not right.")
+        if self._authed():
+            return self._static(["index.html"], authed=True)
+        self._login_page(200)
+
+    def _login(self) -> None:
+        auth = self.app.auth
+        if not self._origin_ok() or self.headers.get("Sec-Fetch-Site") == "cross-site":
+            raise HttpError(403, "origin not allowed")
+        if auth.locked_out():
+            return self._login_page(429, "Too many attempts. Wait a minute and try again.")
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > FORM_LIMIT:
+            raise HttpError(413, "body too large")
+        form = parse_qs(self.rfile.read(length).decode("utf-8", "replace"))
+        if auth.check_token(form.get("token", [""])[0]):
+            return self._redirect(303, "/", cookie_header(auth.make_cookie()))
+        auth.record_failure()
+        self._login_page(401, "That token is not right.")
 
     def do_GET(self) -> None:
         self._run("GET")
@@ -332,13 +424,23 @@ class Handler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in url.path.split("/") if p]
         query = parse_qs(url.query)
         app = self.app
-        if method == "GET" and (not parts or parts[0] == "ui"):
-            return self._static(parts[1:] if parts else [])
+        if method == "GET" and not parts:
+            return self._root(query)
+        if method == "POST" and parts == ["login"]:
+            return self._login()
+        if method == "GET" and parts[:1] == ["ui"]:
+            return self._static(parts[1:])
         if parts[:1] != ["api"]:
             raise HttpError(404, "not found")
         route = parts[1:]
         if route == ["health"] and method == "GET":
-            return self._json(200, {"ok": True})
+            return self._json(200, {"ok": True, "auth": app.auth.enabled})
+        if not self._authed():
+            raise HttpError(401, "login required")
+        if route == ["logout"] and method == "POST":
+            return self._logout()
+        if route == ["doctor"] and method == "GET":
+            return self._json(200, app.doctor(force=_int(query, "force", 0, 0, 1) == 1))
         if route == ["investigations"]:
             if method == "GET":
                 return self._json(200, {"investigations": list_investigations(app.config.data_dir)})
@@ -418,8 +520,22 @@ class Handler(BaseHTTPRequestHandler):
         count = _int(query, "count", 20, 1, drill.MAX_LINES)
         self._json(200, drill.read_lines(path, start, count))
 
-    def _static(self, parts: list[str]) -> None:
+    def _logout(self) -> None:
+        self.send_response(200)
+        body = b'{"ok": true}'
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Set-Cookie", cookie_header("", 0))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _static(self, parts: list[str], authed: bool = False) -> None:
         rel = "/".join(parts) or "index.html"
+        if rel in ("index.html", "login.html") and not authed:
+            return (
+                self._login_page(200) if not self._authed() else self._static(["index.html"], True)
+            )
         target = (UI_DIR / rel).resolve()
         if not target.is_relative_to(UI_DIR.resolve()) or not target.is_file():
             raise HttpError(404, "not found")
@@ -448,10 +564,34 @@ def make_server(app: App) -> ThreadingHTTPServer:
     return server
 
 
+def access_url(config: Config, port: int | None = None) -> str:
+    shown_host = "localhost" if config.host in ("0.0.0.0", "::") else config.host
+    base = config.public_url or f"http://{shown_host}:{port or config.port}"
+    return f"{base}/?token={config.token}" if config.token else base
+
+
+def print_doctor(report: Report) -> None:
+    marks = {"ok": "ok  ", "warn": "warn", "fail": "FAIL"}
+    for check in report.checks:
+        print(f"  [{marks[check.status]}] {check.label}: {check.detail}", flush=True)
+        if check.status != "ok" and check.fix:
+            print(f"         {check.fix}", flush=True)
+    print(f"Startup check: {report.status}", flush=True)
+
+
 def serve(config: Config, execute: Executor = subprocess_executor) -> None:
     app = App(config, execute)
     server = make_server(app)
-    print(f"ReHub listening on http://{config.host}:{server.server_port}", flush=True)
+    url = access_url(config, server.server_port)
+    print_doctor(run_doctor(config.data_dir, execute, auth_enabled=bool(config.token)))
+    if config.token:
+        print(f"ReHub is running. Open this link, it signs you in:\n  {url}", flush=True)
+    else:
+        print(f"ReHub is running at {url}", flush=True)
+        print(
+            "WARNING: authentication is off. Anyone who can reach this port can use ReHub.",
+            flush=True,
+        )
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -461,4 +601,4 @@ def serve(config: Config, execute: Executor = subprocess_executor) -> None:
         app.shutdown()
 
 
-__all__ = ["RECORD", "App", "Config", "make_server", "serve"]
+__all__ = ["RECORD", "App", "Config", "access_url", "make_server", "serve"]

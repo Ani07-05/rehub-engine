@@ -22,13 +22,15 @@ docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g
   rehub --data /data analyze /in/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20
 ```
 
-Or run the web UI (open http://localhost:8080):
+Or run the web UI. It prints a sign-in link containing an access token (`docker logs <container>`, or `rehub token`); the first visit trades the token for a cookie. Without the token, visitors only see a sign-in page.
 
 ```sh
 docker run --rm -p 127.0.0.1:8080:8080 -e REHUB_HOST=0.0.0.0 --read-only --tmpfs /tmp \
   --cap-drop ALL --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
   -v "$PWD/data:/data" rehub:dev rehub --data /data serve
 ```
+
+Check that everything works with `rehub doctor`: it runs Zeek, Suricata and tshark on a built-in sample capture and verifies the expected Modbus write is detected. The web UI shows the same check on its start page.
 
 ## Develop
 

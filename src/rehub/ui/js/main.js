@@ -11,6 +11,7 @@ const bar = document.getElementById("bar");
 const cache = new Map();
 let lastTab = "findings";
 let seq = 0;
+let authOn = false;
 
 function navigate(hash) {
   if (location.hash === hash) route();
@@ -36,6 +37,9 @@ function topbar(record, mode) {
     kids.push(h("span", { class: "grow" }));
   }
   kids.push(h("a", { class: record ? "btn" : "btn ghost", href: "#/" }, "New investigation"));
+  if (authOn) {
+    kids.push(h("button", { class: "btn ghost", type: "button", onclick: async () => { try { await api.logout(); } finally { location.assign("/"); } } }, "Sign out"));
+  }
   mount(bar, kids);
 }
 
@@ -105,4 +109,4 @@ async function route() {
 }
 
 window.addEventListener("hashchange", route);
-route();
+api.health().then((h2) => { authOn = !!h2.auth; }).catch(() => {}).finally(route);

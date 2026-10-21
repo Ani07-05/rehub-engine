@@ -20,11 +20,18 @@ async function request(method, path, body) {
   } catch (err) {
     data = null;
   }
+  if (res.status === 401) {
+    location.assign("/");
+    throw new Error("Signing you out. Redirecting to sign in.");
+  }
   if (!res.ok) throw new Error((data && data.error) || `Request failed (${res.status})`);
   return data;
 }
 
 export const api = {
+  health: () => request("GET", "/health"),
+  doctor: (force) => request("GET", `/doctor${force ? "?force=1" : ""}`),
+  logout: () => request("POST", "/logout"),
   list: () => request("GET", "/investigations"),
   get: (id) => request("GET", `/investigations/${id}`),
   create: () => request("POST", "/investigations"),
@@ -43,6 +50,10 @@ export const api = {
       xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
       xhr.onerror = () => reject(new Error(`Upload of ${file.name} failed. Is the server running?`));
       xhr.onload = () => {
+        if (xhr.status === 401) {
+          location.assign("/");
+          return reject(new Error("Signed out. Redirecting to sign in."));
+        }
         let data = null;
         try {
           data = JSON.parse(xhr.responseText);

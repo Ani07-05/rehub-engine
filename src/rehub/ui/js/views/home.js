@@ -1,5 +1,6 @@
 import { h, mount, fmtBytes, plural, fmtTime } from "../dom.js";
 import { api } from "../api.js";
+import { systemCheck } from "./health.js";
 
 const PLC_FILE = /\.(st|xml|l5x)$/i;
 const IP_LIKE = /^[0-9a-f:.]{3,45}$/i;
@@ -177,7 +178,7 @@ export function renderHome(root, navigate) {
   for (const ev of ["dragenter", "dragover"]) drop.addEventListener(ev, (e) => (e.preventDefault(), drop.classList.add("over")));
   for (const ev of ["dragleave", "drop"]) drop.addEventListener(ev, (e) => (e.preventDefault(), drop.classList.remove("over")));
   drop.addEventListener("drop", (e) => add([...e.dataTransfer.files]));
-  mount(root, h("div", { class: "col stack-lg" }, drop, area, recent));
+  mount(root, h("div", { class: "col stack-lg" }, systemCheck(), drop, area, recent));
   draw();
   loadRecent();
 }

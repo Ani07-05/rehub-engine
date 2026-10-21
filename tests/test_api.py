@@ -93,7 +93,7 @@ def analyzed(client: Client) -> tuple[str, dict[str, Any]]:
 
 
 def test_health_and_static_ui(client: Client) -> None:
-    assert client.json("GET", "/api/health") == (200, {"ok": True})
+    assert client.json("GET", "/api/health") == (200, {"ok": True, "auth": False})
     status, headers, body = client.call("GET", "/")
     assert status == 200 and b"ReHub" in body
     assert "default-src 'self'" in headers["content-security-policy"]

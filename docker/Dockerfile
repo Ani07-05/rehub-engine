@@ -52,3 +52,5 @@ ENV PATH=/opt/rehub/venv/bin:/usr/local/zeek/bin:/opt/suricata/bin:$PATH \
     REHUB_DATA=/data
 USER rehub
 VOLUME /data
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python3", "-c", "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('REHUB_PORT', '8080') + '/api/health', timeout=3)"]

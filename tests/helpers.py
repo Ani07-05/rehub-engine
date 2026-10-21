@@ -32,3 +32,43 @@ class FixtureExecutor:
         elif tool == "tshark" and stdout_path is not None:
             shutil.copy(DEMO / "tshark" / "packets.tsv", stdout_path)
         return subprocess.CompletedProcess(argv, 0, "", "")
+
+
+PROBES = {
+    ("zeek", "--version"): "zeek version 8.0.10",
+    ("zeek", "-N"): "ICSNPP::ENIP - Ethernet/IP (dynamic)\nICSNPP::S7COMM - S7comm (dynamic)",
+    ("suricata", "-V"): "This is Suricata version 8.0.7 RELEASE",
+    ("tshark", "--version"): "TShark (Wireshark) 4.4.19.",
+}
+
+
+class ProbeExecutor(FixtureExecutor):
+    def __init__(
+        self,
+        fail: set[str] | None = None,
+        missing: set[str] | None = None,
+        probes: dict[tuple[str, str], str] | None = None,
+        no_alerts: bool = False,
+    ) -> None:
+        super().__init__(fail)
+        self.missing = missing or set()
+        self.probes = {**PROBES, **(probes or {})}
+        self.no_alerts = no_alerts
+
+    def __call__(
+        self,
+        argv: Sequence[str],
+        *,
+        cwd: Path,
+        timeout: float,
+        stdout_path: Path | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        if argv[0] in self.missing:
+            raise FileNotFoundError(2, "No such file", argv[0])
+        key = (argv[0], argv[1]) if len(argv) == 2 else None
+        if key in self.probes:
+            return subprocess.CompletedProcess(argv, 0, self.probes[key], "")
+        proc = super().__call__(argv, cwd=cwd, timeout=timeout, stdout_path=stdout_path)
+        if self.no_alerts and argv[0] == "suricata":
+            (cwd / "eve.json").write_text("")
+        return proc

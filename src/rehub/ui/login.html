@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>ReHub - sign in</title>
+<link rel="icon" type="image/svg+xml" href="/ui/favicon.svg">
+<link rel="stylesheet" href="/ui/css/app.css">
+</head>
+<body>
+<main class="col stack-lg">
+<h1>Sign in to ReHub</h1>
+<p class="muted">ReHub only opens for the person who started it. Use the link printed when it started, or paste the access token here.</p>
+<!--ERROR-->
+<form class="stack" method="post" action="/login">
+<label class="stack" for="token"><span>Access token</span>
+<input class="input mono" id="token" name="token" type="password" autocomplete="off" autofocus required></label>
+<p><button class="btn primary" type="submit">Sign in</button></p>
+</form>
+<p class="small muted">Lost the link? In a terminal run <code>rehub token</code>, or for the Docker install run <code>docker logs rehub</code>.</p>
+</main>
+</body>
+</html>

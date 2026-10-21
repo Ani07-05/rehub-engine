@@ -4,7 +4,9 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from rehub.api import Config, serve
+from rehub.api import Config, access_url, print_doctor, serve
+from rehub.auth import load_or_create_token
+from rehub.doctor import run_doctor
 from rehub.pipeline import load_record, run_investigation
 from rehub.textreport import render_text
 from rehub.tools import Executor, subprocess_executor
@@ -42,7 +44,14 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--timeout", type=float, default=1800.0)
     show = sub.add_parser("show", help="print a stored investigation")
     show.add_argument("id")
+    doctor = sub.add_parser("doctor", help="check that the tools and the data folder work")
+    doctor.add_argument("--quick", action="store_true", help="skip the sample-capture self test")
+    token = sub.add_parser("token", help="print the sign-in link for the web UI")
+    token.add_argument(
+        "--rotate", action="store_true", help="replace the token (signs everyone out)"
+    )
     serve = sub.add_parser("serve", help="run the local web UI and API")
+    serve.add_argument("--no-auth", action="store_true", help="disable sign-in (not recommended)")
     serve.add_argument(
         "--host", default=None, help="bind address (default $REHUB_HOST or 127.0.0.1)"
     )
@@ -54,8 +63,19 @@ def main(argv: Sequence[str] | None = None, execute: Executor = subprocess_execu
     parser = build_parser()
     args = parser.parse_args(argv)
     data = Path(args.data).expanduser()
+    if args.command == "doctor":
+        report = run_doctor(data, execute, auth_enabled=True, quick=args.quick)
+        print_doctor(report)
+        return 1 if report.status == "fail" else 0
+    if args.command == "token":
+        config = Config.from_env(data)
+        config.token = load_or_create_token(data, rotate=args.rotate)
+        print(access_url(config))
+        return 0
     if args.command == "serve":
         config = Config.from_env(data)
+        if args.no_auth:
+            config.token = ""
         if args.host:
             config.host = args.host
         if args.port is not None:
