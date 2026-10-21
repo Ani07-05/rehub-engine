@@ -61,10 +61,8 @@ jobs:
           context: .
           file: docker/Dockerfile
           platforms: ${{ matrix.platform }}
-          cache-from: type=gha,scope=${{ matrix.tag }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.tag }}
           load: ${{ github.event_name == 'pull_request' }}
-          tags: rehub:ci
+          tags: ${{ github.event_name == 'pull_request' && 'rehub:ci' || '' }}
           outputs: ${{ github.event_name != 'pull_request' && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) || '' }}
       - name: Doctor inside the image
         if: github.event_name == 'pull_request'
@@ -126,7 +124,6 @@ jobs:
           file: docker/Dockerfile
           load: true
           tags: rehub:ci
-          cache-from: type=gha,scope=amd64
       - name: Install and check the compose stack
         run: |
           REHUB_IMAGE=rehub:ci ./scripts/install.sh --no-open --port 18080
