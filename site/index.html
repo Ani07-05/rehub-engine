@@ -28,7 +28,7 @@
     <p class="lede">Drop in OT evidence. Get an investigation you can explain. It runs on your own machine and sends nothing out.</p>
     <div class="hero-cmd">
       <div class="cmd"><pre><code id="cmd-hero">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh</code></pre><button class="btn small" type="button" data-copy="cmd-hero">Copy</button></div>
-      <p class="note"><b>Pre-release.</b> The one line works once the repository is public and the image is published. Until then, <a href="#install">build it from source</a>. Needs Docker.</p>
+      <p class="note">Needs Docker with Compose v2. The first run downloads about 280 MB. <a href="#install">Other ways to install</a>.</p>
     </div>
   </section>
 
@@ -62,7 +62,7 @@ cd rehub-engine
 ./scripts/install.sh --local</code></pre><button class="btn small" type="button" data-copy="cmd-src">Copy</button></div>
     </div>
     <p class="status" id="copied" role="status"></p>
-    <p class="note"><b>Pre-release.</b> The one-line install works once the repository is public and the image is published. Until then, use From source, which builds the image on your machine (a few minutes the first time). Needs Docker with Compose v2.</p>
+    <p class="note">Needs Docker with Compose v2. The one line pulls the published image (about 280 MB, for Intel and Apple-silicon or Arm machines) and starts it in under a minute. From source builds the same image on your machine, which takes a few minutes the first time.</p>
   </section>
 
   <section class="block" aria-labelledby="knows">
@@ -162,7 +162,7 @@ sh install.sh --uninstall --purge   # also delete them</code></pre><button class
       <li>It does not capture live traffic. It analyzes files you give it.</li>
       <li>It does not give verdicts. ATT&amp;CK for ICS techniques are candidates, because a capture cannot show whether a command was authorized.</li>
       <li>It does not yet read every file type. Syslog, CSV asset and historian exports and tshark JSON are stored and hashed, and listed as not analyzed.</li>
-      <li>It is tested on macOS (Apple silicon) with Docker Desktop and on real public Modbus, S7 and DNP3 captures. Linux is expected to work and Windows (WSL) is untested.</li>
+      <li>It is tested on macOS (Apple silicon) with Docker Desktop and on real public Modbus, S7 and DNP3 captures. The image is built for amd64 and arm64 (the build runs in CI), but Linux and Windows (WSL) installs are untested.</li>
     </ul>
     <h3>Pinned tools</h3>
     <div class="tablewrap"><table>

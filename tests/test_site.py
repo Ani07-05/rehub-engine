@@ -82,7 +82,7 @@ def test_screenshots_have_alt_text_and_dimensions() -> None:
 def test_install_command_is_in_the_static_html_for_visitors_without_js() -> None:
     assert f"curl -fsSL {RAW_URL} | sh" in INDEX
     assert "./scripts/install.sh --local" in INDEX
-    assert "Pre-release" in INDEX
+    assert "Pre-release" not in INDEX and "Needs Docker" in INDEX
 
 
 def test_page_states_its_limits_honestly() -> None:

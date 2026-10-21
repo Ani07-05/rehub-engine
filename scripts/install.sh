@@ -185,7 +185,8 @@ URL="http://localhost:$PORT/"
 say ""
 if [ "$CHECK" = ok ]; then say "ReHub is ready."; else say "ReHub is running, but a check failed (see above)."; fi
 say "Open: $URL"
-say "Stop it: $0 --uninstall    Update it: $0 --update"
+if [ -f "$0" ]; then SELF="$0"; else SELF="curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh -s --"; fi
+say "Stop it: $SELF --uninstall    Update it: $SELF --update"
 if [ "$OPEN" = 1 ]; then
   if command -v open >/dev/null 2>&1; then open "$URL" >/dev/null 2>&1 || true
   elif command -v xdg-open >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then xdg-open "$URL" >/dev/null 2>&1 || true

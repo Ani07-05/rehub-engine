@@ -14,7 +14,7 @@ PCAP / OT evidence
   Assets > Communication > Detections > Evidence > Report
 ```
 
-Status: work in progress, aimed at Black Hat Arsenal. Engine, CLI, web UI, report, installer and tests work. The CI workflow and the published image have not run yet (see `docs/STATUS.md`).
+Status: work in progress, aimed at Black Hat Arsenal. Engine, CLI, web UI, report, installer, CI and the published multi-architecture image work (see `docs/STATUS.md`).
 
 ## What you get
 
@@ -37,7 +37,7 @@ Needs Docker (Desktop or Engine) with Compose v2.
 ./scripts/install.sh              # pulls the published image
 ```
 
-Once the repository is public: `curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh`. The script is short; read it first.
+Or in one line (about 280 MB, under a minute on a normal connection): `curl -fsSL https://rehub-engine.vercel.app/install.sh | sh`. The same file is at `raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh`. The script is short; read it first. Tested end to end from a clean home against the published image.
 
 It starts two containers from `compose.yml`:
 

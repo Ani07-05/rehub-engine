@@ -25,7 +25,10 @@ def test_installer_is_self_contained_posix_sh() -> None:
     assert SCRIPT.read_text().startswith("#!/bin/sh\n")
     assert subprocess.run(["sh", "-n", str(SCRIPT)], check=False).returncode == 0
     body = SCRIPT.read_text()
-    assert "curl" not in body.replace("curl | sh", "")
+    mentions = [
+        ln.strip() for ln in body.splitlines() if "curl" in ln and not ln.lstrip().startswith("#")
+    ]
+    assert len(mentions) == 1 and mentions[0].startswith('if [ -f "$0" ]'), mentions
     assert "sudo" not in body
 
 
