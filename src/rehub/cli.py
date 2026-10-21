@@ -51,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--rotate", action="store_true", help="replace the token (signs everyone out)"
     )
     serve = sub.add_parser("serve", help="run the local web UI and API")
-    serve.add_argument("--no-auth", action="store_true", help="disable sign-in (not recommended)")
+    serve.add_argument("--auth", action="store_true", help="require an access token to sign in")
     serve.add_argument(
         "--host", default=None, help="bind address (default $REHUB_HOST or 127.0.0.1)"
     )
@@ -74,8 +74,8 @@ def main(argv: Sequence[str] | None = None, execute: Executor = subprocess_execu
         return 0
     if args.command == "serve":
         config = Config.from_env(data)
-        if args.no_auth:
-            config.token = ""
+        if args.auth and not config.token:
+            config.token = load_or_create_token(data)
         if args.host:
             config.host = args.host
         if args.port is not None:

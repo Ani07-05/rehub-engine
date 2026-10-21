@@ -238,13 +238,7 @@ def check_selftest(execute: Executor) -> list[Check]:
 def check_auth(enabled: bool) -> Check:
     if enabled:
         return Check("auth", "Sign-in", OK, "an access token is required")
-    return Check(
-        "auth",
-        "Sign-in",
-        WARN,
-        "authentication is off",
-        "Anyone who can reach this port can use ReHub. Start without --no-auth.",
-    )
+    return Check("auth", "Sign-in", OK, "off, local only. Set REHUB_TOKEN to require a token")
 
 
 def run_doctor(

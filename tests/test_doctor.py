@@ -66,9 +66,10 @@ def test_quick_skips_the_sample_capture(tmp_path: Path) -> None:
     assert not any(c.id.startswith("selftest") for c in report.checks)
 
 
-def test_auth_off_is_a_warning(tmp_path: Path) -> None:
+def test_sign_in_off_is_fine_for_a_local_tool(tmp_path: Path) -> None:
     report = run_doctor(tmp_path, ProbeExecutor(), auth_enabled=False)
-    assert by_id(report)["auth"].status == WARN and report.status == WARN
+    assert by_id(report)["auth"].status == OK and "local only" in by_id(report)["auth"].detail
+    assert report.status == OK
 
 
 def test_unwritable_data_folder_fails(tmp_path: Path) -> None:

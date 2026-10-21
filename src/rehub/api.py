@@ -55,6 +55,12 @@ class HttpError(Exception):
         self.message = message
 
 
+def _configured_token(data_dir: Path) -> str:
+    if os.environ.get("REHUB_TOKEN", "").strip() or os.environ.get("REHUB_AUTH") == "1":
+        return load_or_create_token(data_dir)
+    return ""
+
+
 @dataclass(slots=True)
 class Config:
     data_dir: Path
@@ -83,7 +89,7 @@ class Config:
             max_draft_bytes=int(os.environ.get("REHUB_MAX_DRAFT_BYTES", str(16 << 30))),
             allowed_hosts=DEFAULT_ALLOWED_HOSTS | extra,
             workers=int(os.environ.get("REHUB_WORKERS", "1")),
-            token="" if os.environ.get("REHUB_NO_AUTH") == "1" else load_or_create_token(data_dir),
+            token=_configured_token(data_dir),
             public_url=os.environ.get("REHUB_PUBLIC_URL", "").rstrip("/"),
         )
 
@@ -587,9 +593,9 @@ def serve(config: Config, execute: Executor = subprocess_executor) -> None:
     if config.token:
         print(f"ReHub is running. Open this link, it signs you in:\n  {url}", flush=True)
     else:
-        print(f"ReHub is running at {url}", flush=True)
+        print(f"ReHub is running. Open {url}", flush=True)
         print(
-            "WARNING: authentication is off. Anyone who can reach this port can use ReHub.",
+            "Sign-in is off because ReHub is local only. Set REHUB_TOKEN to require a token.",
             flush=True,
         )
     try:

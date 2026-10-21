@@ -189,12 +189,18 @@ def test_access_url_includes_token_and_translates_wildcard_host() -> None:
     assert access_url(config) == "http://localhost:9000"
 
 
-def test_from_env_creates_persistent_token(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("REHUB_NO_AUTH", raising=False)
+def test_sign_in_is_off_by_default_and_opt_in(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for name in ("REHUB_TOKEN", "REHUB_AUTH", "REHUB_NO_AUTH"):
+        monkeypatch.delenv(name, raising=False)
+    assert Config.from_env(tmp_path).token == ""
+    monkeypatch.setenv("REHUB_AUTH", "1")
     first = Config.from_env(tmp_path)
     assert first.token and Config.from_env(tmp_path).token == first.token
-    monkeypatch.setenv("REHUB_NO_AUTH", "1")
-    assert Config.from_env(tmp_path).token == ""
+    monkeypatch.delenv("REHUB_AUTH")
+    monkeypatch.setenv("REHUB_TOKEN", "explicit")
+    assert Config.from_env(tmp_path).token == "explicit"
 
 
 def test_token_never_logged_in_json_errors(web: tuple[Raw, Config]) -> None:
