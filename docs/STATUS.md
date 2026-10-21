@@ -13,7 +13,7 @@ Black Hat Arsenal tool: drop in OT evidence, get an investigation (assets, commu
 
 ## Built
 
-Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark adapters, Community ID, correlator, PLC adapter and register linker. Full test suite passes (`uv run pytest`).
+Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark adapters, Community ID, correlator, PLC adapter and register linker, investigation pipeline (`rehub analyze`, `rehub show`) with JSON persistence. Full test suite passes (`uv run pytest`), including an end to end run in a no-network, read-only, cap-dropped container.
 
 ## Decisions
 
@@ -28,8 +28,8 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 
 ## Next, in order
 
-1. Pipeline runner: upload, ingest, tools, adapters, PLC loaders, correlate, store (SQLite).
-2. API (upload, status, results, evidence download).
+1. API (upload, status, results, evidence download) over the existing pipeline. Results are `record.json` per investigation under `$REHUB_DATA/investigations/<id>/`.
+2. (done) pipeline runner.
 3. UI: assets, flow graph, detections, evidence drill-down, PLC impact panel. Plain HTML and JS.
 4. Report export with hashes, caveats and ATT&CK note.
 5. Hardened compose (internal network plus gateway so the engine has no egress, `cap_drop: ALL`, read-only root, memory and pid limits), `install.sh`, publish image to GHCR.
