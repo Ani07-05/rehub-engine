@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
@@ -70,10 +71,18 @@ class PlcSummary:
     caveats: list[str]
 
 
+def engine_version() -> str:
+    try:
+        return metadata.version("rehub")
+    except metadata.PackageNotFoundError:
+        return "unknown"
+
+
 @dataclass(slots=True)
 class Record:
     id: str
     created: str
+    engine_version: str = ""
     evidence: list[Evidence] = field(default_factory=list)
     tool_runs: list[ToolRun] = field(default_factory=list)
     plc: list[PlcSummary] = field(default_factory=list)
@@ -143,6 +152,7 @@ def load_record(data_dir: Path, inv_id: str) -> Record | None:
     return Record(
         id=d["id"],
         created=d["created"],
+        engine_version=d.get("engine_version", ""),
         evidence=[evidence_from_dict(e) for e in d["evidence"]],
         tool_runs=[ToolRun(**t) for t in d["tool_runs"]],
         plc=[PlcSummary(**p) for p in d["plc"]],
@@ -243,7 +253,9 @@ def run_investigation(
     inv_dir = investigation_dir(data_dir, inv_id)
     inv_dir.mkdir(parents=True, exist_ok=False)
     store = data_dir / "store"
-    record = Record(id=inv_id, created=datetime.now(UTC).isoformat())
+    record = Record(
+        id=inv_id, created=datetime.now(UTC).isoformat(), engine_version=engine_version()
+    )
 
     def progress(stage: str, detail: str = "") -> None:
         _write_status(inv_dir, stage, detail)

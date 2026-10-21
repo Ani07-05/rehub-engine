@@ -187,3 +187,20 @@ def test_investigation_id_collision_refused(tmp_path: Path) -> None:
         run_investigation(
             [PCAP], tmp_path / "data", execute=FixtureExecutor(), investigation_id="same"
         )
+
+
+def test_record_carries_engine_version(tmp_path: Path) -> None:
+    rec, _ = run(tmp_path, [PCAP])
+    assert rec.engine_version and rec.engine_version != "unknown"
+    loaded = load_record(tmp_path / "data", rec.id)
+    assert loaded is not None and loaded.engine_version == rec.engine_version
+
+
+def test_old_records_without_version_still_load(tmp_path: Path) -> None:
+    rec, _ = run(tmp_path, [PCAP])
+    path = tmp_path / "data" / "investigations" / rec.id / "record.json"
+    raw = json.loads(path.read_text())
+    del raw["engine_version"]
+    path.write_text(json.dumps(raw))
+    loaded = load_record(tmp_path / "data", rec.id)
+    assert loaded is not None and loaded.engine_version == ""
