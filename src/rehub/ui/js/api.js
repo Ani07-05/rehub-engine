@@ -35,6 +35,7 @@ export const api = {
   list: () => request("GET", "/investigations"),
   get: (id) => request("GET", `/investigations/${id}`),
   create: () => request("POST", "/investigations"),
+  demo: () => request("POST", "/demo"),
   run: (id, plcIps) => request("POST", `/investigations/${id}/run`, { plc_ips: plcIps }),
   remove: (id) => request("DELETE", `/investigations/${id}`),
   lines: (id, sha, start, count) =>

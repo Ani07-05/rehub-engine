@@ -236,3 +236,39 @@ export function serviceChain(checks) {
 export function chainStatus(chain) {
   return chain.reduce((worst, n) => (RANK_STATUS[n.status] > RANK_STATUS[worst] ? n.status : worst), "ok");
 }
+
+function count(n, one, many) {
+  return `${n} ${n === 1 ? one : many || one + "s"}`;
+}
+
+const HIDDEN_PROTOCOLS = new Set(["cotp"]);
+
+export const STAGE_TABS = { assets: "devices", communication: "communication", detections: "findings", evidence: "evidence", report: "report" };
+
+export function flowStages(record) {
+  const inv = record.investigation;
+  const assets = Object.values(inv.assets);
+  const controllers = assets.filter((a) => a.kind === "controller").length;
+  const flows = Object.values(inv.flows);
+  const protocols = [...new Set(flows.flatMap((f) => (f.service || f.proto || "").split(",")).filter((p) => p && !HIDDEN_PROTOCOLS.has(p)))];
+  const detections = inv.detections;
+  const confirmed = detections.filter((d) => d.corroborated).length;
+  return [
+    { id: "assets", label: "Assets", count: assets.length, question: "What devices are on this network?", did: "Identified devices from traffic and address announcements, and named a vendor only where the hardware address could be trusted.", result: `${count(assets.length, "asset")}${controllers ? `, ${count(controllers, "controller")}` : ""}` },
+    { id: "communication", label: "Communication", count: flows.length, question: "Who talks to whom?", did: "Joined the Zeek, Suricata and tshark records of the same conversation into one.", result: `${count(flows.length, "conversation")}${protocols.length ? ` over ${protocols.slice(0, 3).join(", ")}` : ""}` },
+    { id: "detections", label: "Detections", count: detections.length, question: "What looks wrong?", did: "Merged rule alerts and control commands across tools, and read the PLC logic they touch.", result: `${count(detections.length, "detection")}${detections.length ? `, ${confirmed} confirmed by two tools` : ""}` },
+    { id: "evidence", label: "Evidence", count: record.evidence.length, question: "What proves it?", did: "Fingerprinted every file and linked each detection to the file, line and packets behind it.", result: `${count(record.evidence.length, "file")} fingerprinted` },
+    { id: "report", label: "Report", count: null, question: "What do I hand to others?", did: "Wrote the summary, the gaps and the chain of custody into one document.", result: "Ready to print or download" },
+  ];
+}
+
+export const PREVIEW_STAGES = flowStages({ investigation: { assets: {}, flows: {}, detections: [] }, evidence: [] }).map((s) => ({ id: s.id, label: s.label, question: s.question, did: s.did }));
+
+export const ENGINE_ACTIONS = {
+  upload: "Receiving your files",
+  queued: "Waiting to start",
+  ingest: "Reading each file and fingerprinting it",
+  analyze: "Running Zeek, Suricata and tshark on the capture",
+  correlate: "Joining the results into assets, conversations and detections",
+  done: "Finished",
+};

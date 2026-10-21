@@ -143,3 +143,28 @@ test("missing results never look healthy", async () => {
   const chain = serviceChain([]);
   assert.ok(chain.every((n) => n.status === "fail"));
 });
+
+test("flow stages describe what the engine produced, in the diagram's order", async () => {
+  const { flowStages, PREVIEW_STAGES, ENGINE_ACTIONS } = await import("../../src/rehub/ui/js/narrate.js");
+  const stages = flowStages(load());
+  assert.deepEqual(stages.map((s) => s.label), ["Assets", "Communication", "Detections", "Evidence", "Report"]);
+  assert.equal(stages[0].result, "6 assets, 2 controllers");
+  assert.equal(stages[1].result, "6 conversations over modbus, s7comm");
+  assert.equal(stages[2].result, "7 detections, 3 confirmed by two tools");
+  assert.equal(stages[3].result, "9 files fingerprinted");
+  assert.equal(stages[4].result, "Ready to print or download");
+  assert.ok(stages.every((s) => s.question.endsWith("?") && s.did.length > 20));
+  assert.equal(PREVIEW_STAGES.length, 5);
+  assert.ok(ENGINE_ACTIONS.analyze.includes("Zeek"));
+});
+
+test("empty investigations read sensibly", async () => {
+  const { flowStages } = await import("../../src/rehub/ui/js/narrate.js");
+  const record = load();
+  record.investigation = { assets: {}, flows: {}, detections: [], caveats: [], event_count: 0 };
+  record.evidence = [];
+  const stages = flowStages(record);
+  assert.equal(stages[0].result, "0 assets");
+  assert.equal(stages[2].result, "0 detections");
+  assert.equal(stages[3].result, "0 files fingerprinted");
+});

@@ -11,6 +11,7 @@ Status: work in progress. Engine, CLI, API, web UI and report export work; the i
 - Correlates all three by Community ID: assets, flows, detections, with corroboration across tools.
 - Maps Modbus register writes to the PLC variables they hit, the logic that reads them and the outputs they drive.
 - Flags capture gaps and missing tools instead of treating silence as clean.
+- Shows its own work as one flow: Assets, Communication, Detections, Evidence, Report, each with the question it answers and what the engine did.
 
 ## Try it
 
@@ -22,7 +23,7 @@ docker run --rm --network none --read-only --tmpfs /tmp --user "$(id -u):$(id -g
   rehub --data /data analyze /in/ot-demo.pcap /in/plc/pump.st --plc-ip pump.st=10.0.0.20
 ```
 
-Or run the web UI and open http://localhost:8080. It opens on a REHUB screen that checks Zeek, Suricata, tshark and storage, then lets you Enter. Sign-in is off by default because it is local only; set `REHUB_TOKEN` (or start with `--auth`) to require an access token, in which case it prints a sign-in link.
+Or run the web UI and open http://localhost:8080. It opens on a REHUB screen (or use "Try the demo" on the start page for a built-in case) that checks Zeek, Suricata, tshark and storage, then lets you Enter. Sign-in is off by default because it is local only; set `REHUB_TOKEN` (or start with `--auth`) to require an access token, in which case it prints a sign-in link.
 
 ```sh
 docker run --rm -p 127.0.0.1:8080:8080 -e REHUB_HOST=0.0.0.0 --read-only --tmpfs /tmp \

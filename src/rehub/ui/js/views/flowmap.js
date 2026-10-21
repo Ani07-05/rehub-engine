@@ -64,7 +64,7 @@ export function flowMap(record, onSelect) {
     const vendor = a.vendor ? a.vendor.split(" (")[0] : a.locally_administered_mac ? "unidentified device" : a.kind;
     const node = s(
       "g",
-      { class: "node", transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: "button", "aria-label": `${a.id}, ${vendor}. Show its findings.` },
+      { class: "node", transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: "button", "aria-label": `${a.id}, ${vendor}. Show its detections.` },
       s("rect", { width: NODE_W, height: NODE_H, rx: 10 }),
       s("text", { x: 14, y: 19 }, a.id),
       s("text", { class: "sub", x: 14, y: 35 }, trim(`${vendor}${a.kind === "controller" ? " controller" : ""}`, 40)),
@@ -79,7 +79,7 @@ export function flowMap(record, onSelect) {
 
   const svg = s(
     "svg",
-    { class: "map", viewBox: `0 0 ${W} ${height}`, role: "group", "aria-label": "Who talks to whom. Clients on the left, controllers on the right. Dashed colored lines carry findings." },
+    { class: "map", viewBox: `0 0 ${W} ${height}`, role: "group", "aria-label": "Who talks to whom. Clients on the left, controllers on the right. Dashed colored lines carry detections." },
     edges.map((e) => e.path),
     nodes,
     edges.map((e) => e.label),
@@ -88,6 +88,6 @@ export function flowMap(record, onSelect) {
     "div",
     { class: "stack" },
     h("div", { class: "panel pad" }, svg),
-    h("p", { class: "small muted" }, "Clients are on the left and controllers on the right. A dashed colored line means a finding was raised on that conversation; select a device to see its findings."),
+    h("p", { class: "small muted" }, "Clients are on the left and controllers on the right. A dashed colored line means a detection was raised on that conversation; select an asset to see its detections."),
   );
 }

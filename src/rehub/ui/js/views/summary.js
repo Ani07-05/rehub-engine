@@ -1,6 +1,8 @@
 import { h } from "../dom.js";
 import { ATTACK_NOTE, caveatList, deviceText, headline, impactLine, networkFindings, uploadedEvidence } from "../narrate.js";
 import { fmtTime, plural } from "../dom.js";
+import { flowSteps } from "./engineflow.js";
+import { flowStages } from "../narrate.js";
 import { laneMini, sevBadge } from "./shared.js";
 
 const MAX_SHOWN = 6;
@@ -45,19 +47,20 @@ export function renderSummary(record) {
       h(
         "p",
         { class: "small muted" },
-        `Read ${plural(uploadedEvidence(record).length, "file")}, found ${plural(Object.keys(inv.assets).length, "device")} and ${plural(Object.keys(inv.flows).length, "conversation")}. Analyzed on this computer, ${fmtTime(Date.parse(record.created) / 1000)}.`,
+        `Read ${plural(uploadedEvidence(record).length, "file")}, found ${plural(Object.keys(inv.assets).length, "asset")} and ${plural(Object.keys(inv.flows).length, "conversation")}. Analyzed on this computer, ${fmtTime(Date.parse(record.created) / 1000)}.`,
       ),
     ),
     shown.length
       ? h(
           "section",
           { class: "stack" },
-          h("h2", {}, "Key findings"),
-          h("p", { class: "small muted" }, "The tool lanes show who saw each finding: Zeek (protocol actions), Suricata (rule alerts), tshark (packet details) and PLC (program logic). Filled lanes saw it."),
+          h("h2", {}, "Key detections"),
+          h("p", { class: "small muted" }, "The tool lanes show who saw each detection: Zeek (protocol actions), Suricata (rule alerts), tshark (packet details) and PLC (program logic). Filled lanes saw it."),
           shown.map((d) => findingRow(record, d)),
-          key.length > shown.length ? h("a", { href: `#/i/${record.id}/findings` }, `Show all ${key.length} findings`) : null,
+          key.length > shown.length ? h("a", { href: `#/i/${record.id}/findings` }, `Show all ${key.length} detections`) : null,
         )
       : null,
+    h("section", { class: "stack" }, h("h2", {}, "How ReHub got here"), h("p", { class: "small muted" }, "Each step feeds the next. Select one to open it."), flowSteps(record, flowStages(record))),
     network.length
       ? h("section", { class: "stack" }, h("h2", {}, "Who is involved"), h("ul", { class: "bullets" }, involved(record, network)))
       : null,
@@ -67,7 +70,7 @@ export function renderSummary(record) {
       h("h2", {}, "What we could not verify"),
       caveats.length
         ? h("ul", { class: "bullets" }, caveats.map((c) => h("li", {}, c)))
-        : h("p", { class: "muted" }, "Nothing was flagged as missing. A finding that is not listed here was still not proven safe."),
+        : h("p", { class: "muted" }, "Nothing was flagged as missing. A detection that is not listed here was still not proven safe."),
       hasAttack ? h("p", { class: "small muted" }, ATTACK_NOTE) : null,
     ),
     h("p", { class: "filters" }, h("a", { class: "btn", href: `#/i/${record.id}/findings` }, "Dig deeper in Investigator mode"), h("a", { class: "btn", href: `#/i/${record.id}/report` }, "Open the report")),

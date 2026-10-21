@@ -205,6 +205,9 @@ Gutter-and-line grid in monospace inside a hairline box; the referenced line get
 ### Opening screen (service chain)
 A huge REHUB wordmark, then one line left to right: Storage, Zeek, Suricata, tshark, Enter. Each service is an outlined box with a drawn mark: dashed and pulsing while checking, a ring with a check when ready, a square (needs attention) or triangle (not working) with its word otherwise. Thin links between boxes fill white as each service passes. The real results arrive together and are revealed in order, 260ms apart. Enter is the last node and the focused default; if anything fails it reads "Enter anyway" and the reasons appear below. Reduced motion shows all results at once.
 
+### Engine diagram and flow list
+Your flow diagram drawn live: PCAP / OT evidence, then Zeek (protocol actions), Suricata (rule alerts) and tshark (packet details), then the ReHub engine, then five stage boxes: Assets, Communication, Detections, Evidence, Report. Boxes are dashed when waiting, solid with a pulsing ring while working, solid with a check when done, and red with a triangle when failed; the arrows between rows turn white as each row completes. On the Start page it is a static explanation; on the progress screen the tool states are real, read from the pipeline status. On the Summary the same five stages become a vertical flow list ("How ReHub got here"): each row gives the stage, its result in numbers, the plain question it answers, and one sentence on what the engine did, joined by a rail of ring nodes. In Investigator mode the stage names are the navigation, with a small count after each.
+
 ### Flow map
 SVG, clients on the left and controllers on the right, curved hairline edges. A dashed coloured edge carries a finding. Nodes are keyboard focusable buttons.
 

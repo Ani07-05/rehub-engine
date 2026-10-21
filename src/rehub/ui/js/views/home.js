@@ -1,71 +1,85 @@
 import { h, mount, fmtBytes, plural, fmtTime } from "../dom.js";
 import { api } from "../api.js";
+import { ENGINE_ACTIONS } from "../narrate.js";
+import { engineDiagram } from "./engineflow.js";
 import { lastProblems } from "./splash.js";
 
 const PLC_FILE = /\.(st|xml|l5x)$/i;
 const IP_LIKE = /^[0-9a-f:.]{3,45}$/i;
-const STEPS = [
-  ["upload", "Uploading your files"],
-  ["ingest", "Reading and fingerprinting the evidence"],
-  ["analyze", "Running Zeek, Suricata and tshark"],
-  ["correlate", "Joining the results"],
-];
-
 let chosen = [];
 
-function stepList(active) {
-  const idx = STEPS.findIndex(([id]) => id === active);
-  return h(
-    "ol",
-    { class: "steps", "aria-label": "Progress" },
-    STEPS.map(([id, label], i) =>
-      h("li", { "data-state": i < idx ? "done" : i === idx ? "active" : "todo", "aria-current": i === idx ? "step" : null }, h("span", { class: "dot", "aria-hidden": "true" }), label),
+function analysisScreen(root) {
+  const track = h("div", { class: "bar-fill" });
+  const status = h("div", { "aria-live": "polite" });
+  const action = h("p", { class: "answer", "aria-live": "polite" }, ENGINE_ACTIONS.upload);
+  const show = (stage, tools) => {
+    const engine = stage === "correlate" ? "running" : stage === "done" ? "done" : "idle";
+    const input = stage === "upload" ? "running" : "done";
+    action.textContent = ENGINE_ACTIONS[stage] || ENGINE_ACTIONS.ingest;
+    mount(root, h("div", { class: "col stack-lg" }, h("h1", {}, "Analyzing"), action, engineDiagram({ input, tools: tools || {}, engine }), h("div", { class: "bar-track" }, track), status));
+  };
+  return { track, status, show };
+}
+
+function failureScreen(root, navigate, err) {
+  mount(
+    root,
+    h(
+      "div",
+      { class: "col stack" },
+      h("h1", {}, "That did not finish"),
+      h("div", { class: "callout err" }, err.message),
+      h("p", {}, h("button", { class: "btn primary", type: "button", onclick: () => navigate("#/new") }, "Back to start")),
     ),
   );
+}
+
+async function monitor(id, screen, navigate) {
+  for (;;) {
+    const body = await api.get(id);
+    const stage = body.status.stage;
+    if (stage === "done") return navigate(`#/i/${id}`);
+    if (stage === "failed") throw new Error(body.status.detail || "The analysis failed.");
+    screen.show(stage === "queued" ? "ingest" : stage, body.status.tools);
+    await new Promise((r) => setTimeout(r, 500));
+  }
+}
+
+async function runDemo(root, navigate) {
+  const screen = analysisScreen(root);
+  screen.show("ingest");
+  try {
+    const { id } = await api.demo();
+    await monitor(id, screen, navigate);
+  } catch (err) {
+    failureScreen(root, navigate, err);
+  }
 }
 
 async function runAnalysis(root, navigate) {
   const files = chosen.slice();
   const plcIps = {};
   for (const f of files) if (f.ip) plcIps[f.file.name] = f.ip.trim();
-  const track = h("div", { class: "bar-fill" });
-  const status = h("div", { "aria-live": "polite" });
-  const show = (active, extra) => mount(root, h("div", { class: "col stack-lg" }, h("h1", {}, "Analyzing"), stepList(active), h("div", { class: "bar-track" }, track), status, extra || null));
-  show("upload");
+  const screen = analysisScreen(root);
+  screen.show("upload");
   try {
     const { id } = await api.create();
     const total = files.reduce((n, f) => n + f.file.size, 0) || 1;
     let done = 0;
     for (const f of files) {
-      status.textContent = `Uploading ${f.file.name}`;
+      screen.status.textContent = `Uploading ${f.file.name}`;
       await api.upload(id, f.file, (frac) => {
-        track.style.transform = `scaleX(${(done + frac * f.file.size) / total})`;
+        screen.track.style.transform = `scaleX(${(done + frac * f.file.size) / total})`;
       });
       done += f.file.size;
     }
-    track.style.transform = "scaleX(1)";
-    status.textContent = "";
+    screen.track.style.transform = "scaleX(1)";
+    screen.status.textContent = "";
     await api.run(id, plcIps);
     chosen = [];
-    for (;;) {
-      const body = await api.get(id);
-      const stage = body.status.stage;
-      if (stage === "done") return navigate(`#/i/${id}`);
-      if (stage === "failed") throw new Error(body.status.detail || "The analysis failed.");
-      show(stage === "queued" ? "ingest" : stage);
-      await new Promise((r) => setTimeout(r, 700));
-    }
+    await monitor(id, screen, navigate);
   } catch (err) {
-    mount(
-      root,
-      h(
-        "div",
-        { class: "col stack" },
-        h("h1", {}, "That did not finish"),
-        h("div", { class: "callout err" }, err.message),
-        h("p", {}, h("button", { class: "btn primary", type: "button", onclick: () => navigate("#/new") }, "Back to start")),
-      ),
-    );
+    failureScreen(root, navigate, err);
   }
 }
 
@@ -119,7 +133,7 @@ function recentItem(item, reload) {
   const done = item.stage === "done";
   const names = (item.names || []).join(", ") || "Investigation";
   const meta = done
-    ? `${plural(item.detections, "finding")}, ${item.high} high, ${plural(item.assets, "device")}`
+    ? `${plural(item.detections, "detection")}, ${item.high} high, ${plural(item.assets, "device")}`
     : item.stage === "failed"
       ? "Did not finish"
       : item.stage;
@@ -157,6 +171,7 @@ export function renderHome(root, navigate) {
     h("span", { class: "btn" }, "Choose files"),
     input,
   );
+  const demo = h("p", { class: "small muted" }, "No evidence handy? ", h("button", { class: "btn small", type: "button", onclick: () => runDemo(root, navigate) }, "Try the demo"), " It analyzes a built-in pump station capture with a rogue device.");
   const draw = () => {
     const err = h("p", { class: "small", role: "alert" });
     const go = h("button", { class: "btn primary", type: "button", disabled: chosen.length === 0 }, chosen.length ? `Analyze ${plural(chosen.length, "file")}` : "Analyze");
@@ -182,7 +197,7 @@ export function renderHome(root, navigate) {
   const banner = trouble.length
     ? h("div", { class: "callout err", role: "alert" }, h("b", {}, "Some tools are not working: "), trouble.map((n) => `${n.label} (${n.sub.toLowerCase()})`).join(", "), ". Analysis may fail. ", h("a", { href: "#/" }, "Run the checks again"))
     : null;
-  mount(root, h("div", { class: "col stack-lg" }, banner, drop, area, recent));
+  mount(root, h("div", { class: "col stack-lg" }, banner, drop, demo, area, h("section", { class: "stack" }, h("h2", {}, "What ReHub does with your files"), h("p", { class: "small muted" }, "Every upload follows the same path. Each stage answers one question and feeds the next."), engineDiagram()), recent));
   draw();
   loadRecent();
 }

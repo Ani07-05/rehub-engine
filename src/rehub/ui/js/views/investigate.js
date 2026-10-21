@@ -1,26 +1,28 @@
 import { h, mount, fmtBytes, fmtTime, plural, shortHash } from "../dom.js";
 import { chevron } from "../icons.js";
 import { api } from "../api.js";
-import { KIND_NAMES, deviceLabel, isDerived, lanes, severityWord, timeText } from "../narrate.js";
+import { KIND_NAMES, flowStages, deviceLabel, isDerived, lanes, severityWord, timeText } from "../narrate.js";
 import { renderFinding } from "./finding.js";
 import { flowMap } from "./flowmap.js";
 import { laneMini, sevBadge, showLines, showPackets } from "./shared.js";
 import { reportTab } from "./report.js";
 
 const TABS = [
-  ["devices", "Devices"],
-  ["communication", "Communication"],
-  ["findings", "Findings"],
-  ["evidence", "Evidence"],
-  ["report", "Report"],
+  ["devices", "Assets", "assets"],
+  ["communication", "Communication", "communication"],
+  ["findings", "Detections", "detections"],
+  ["evidence", "Evidence", "evidence"],
+  ["report", "Report", "report"],
 ];
 const RANK = { high: 3, medium: 2, low: 1 };
 
 export function flowNav(record, tab) {
   const items = [];
-  TABS.forEach(([id, label], i) => {
+  const stages = Object.fromEntries(flowStages(record).map((st) => [st.id, st]));
+  TABS.forEach(([id, label, stage], i) => {
     if (i) items.push(chevron());
-    items.push(h("a", { href: `#/i/${record.id}/${id}`, "aria-current": tab === id ? "page" : null }, label));
+    const n = stages[stage].count;
+    items.push(h("a", { href: `#/i/${record.id}/${id}`, "aria-current": tab === id ? "page" : null }, label, n != null ? h("span", { class: "flowcount" }, String(n)) : null));
   });
   return h("nav", { class: "flownav", "aria-label": "Investigation sections" }, items);
 }
@@ -45,13 +47,13 @@ function devicesTab(record) {
       h("td", {}, a.plc_projects.length ? a.plc_projects.join(", ") : "none linked"),
       h("td", { class: "mono" }, macs || "none"),
       h("td", { class: "num" }, timeText(a.first_ts)),
-      h("td", {}, n ? h("a", { href: `#/i/${record.id}/findings?device=${encodeURIComponent(a.id)}` }, plural(n, "finding")) : "none"),
+      h("td", {}, n ? h("a", { href: `#/i/${record.id}/findings?device=${encodeURIComponent(a.id)}` }, plural(n, "detection")) : "none"),
     );
   });
   return h(
     "section",
     { class: "stack" },
-    h("h2", {}, `Devices (${rows.length})`),
+    h("h2", {}, `Assets (${rows.length})`),
     h("p", { class: "muted" }, "Everything that sent or received traffic. A vendor is only shown when the hardware address was confirmed, never guessed from a router."),
     h(
       "div",
@@ -59,7 +61,7 @@ function devicesTab(record) {
       h(
         "table",
         {},
-        h("thead", {}, h("tr", {}, ["Address", "Type", "Vendor", "Roles", "PLC program", "Hardware address", "First seen", "Findings"].map((c) => h("th", {}, c)))),
+        h("thead", {}, h("tr", {}, ["Address", "Type", "Vendor", "Roles", "PLC program", "Hardware address", "First seen", "Detections"].map((c) => h("th", {}, c)))),
         h("tbody", {}, rows),
       ),
     ),
@@ -110,7 +112,7 @@ function communicationTab(record, ctx) {
       h(
         "div",
         { class: "tablewrap" },
-        h("table", {}, h("thead", {}, h("tr", {}, ["From", "To", "Protocol", "Packets", "Finding", "Started", "Detail"].map((c) => h("th", {}, c)))), h("tbody", {}, rows)),
+        h("table", {}, h("thead", {}, h("tr", {}, ["From", "To", "Protocol", "Packets", "Detection", "Started", "Detail"].map((c) => h("th", {}, c)))), h("tbody", {}, rows)),
       ),
     ),
   );
@@ -132,7 +134,7 @@ function findingsTab(record, ctx, selectedId, query) {
   const selected = list.find((d) => d.id === selectedId) || inv.detections.find((d) => d.id === selectedId) || list[0] || null;
   const filters = h(
     "div",
-    { class: "filters", role: "group", "aria-label": "Filter findings" },
+    { class: "filters", role: "group", "aria-label": "Filter detections" },
     ...["all", "high", "medium", "low"].map((v) =>
       h("a", { class: "btn small ghost", href: href({ severity: v === "all" ? null : v }, null), "aria-current": sev === v ? "true" : null }, v === "all" ? "All" : severityWord(v)),
     ),
@@ -152,11 +154,11 @@ function findingsTab(record, ctx, selectedId, query) {
   return h(
     "section",
     { class: "stack" },
-    h("h2", {}, `Findings (${list.length})`),
+    h("h2", {}, `Detections (${list.length})`),
     filters,
     list.length
       ? h("div", { class: "twopane" }, h("div", { class: "listpane" }, picks), h("div", { class: "detail" }, selected ? renderFinding(record, selected, ctx) : null))
-      : h("div", { class: "empty" }, "No findings match these filters.", " ", h("a", { href: base }, "Clear filters")),
+      : h("div", { class: "empty" }, "No detections match these filters.", " ", h("a", { href: base }, "Clear filters")),
   );
 }
 
@@ -194,7 +196,7 @@ function evidenceTab(record, ctx) {
       "section",
       { class: "stack" },
       h("h2", {}, `Evidence files (${rows.length})`),
-      h("p", { class: "muted" }, "Every file is identified by its SHA-256 hash. Files the tools produced list the capture they came from, so each finding traces back to the original upload."),
+      h("p", { class: "muted" }, "Every file is identified by its SHA-256 hash. Files the tools produced list the capture they came from, so each detection traces back to the original upload."),
       h("div", { class: "tablewrap" }, h("table", {}, h("thead", {}, h("tr", {}, ["File", "Type", "Size", "SHA-256", "Actions"].map((c) => h("th", {}, c)))), h("tbody", {}, rows))),
     ),
     runs.length

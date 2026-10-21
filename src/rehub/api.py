@@ -46,6 +46,8 @@ CSP = (
 )
 FORM_LIMIT = 4096
 DOCTOR_TTL = 30.0
+DEMO_DIR = Path(__file__).parent / "data" / "demo"
+DEMO_PLC_IPS = {"pump.st": "10.0.0.20"}
 
 
 class HttpError(Exception):
@@ -185,6 +187,13 @@ class App:
         inv_id = uuid.uuid4().hex[:12]
         (self.uploads / inv_id).mkdir(parents=True)
         return {"id": inv_id}
+
+    def demo(self) -> dict[str, Any]:
+        inv_id = self.create()["id"]
+        draft = self.draft_dir(inv_id)
+        for sample in sorted(DEMO_DIR.iterdir()):
+            shutil.copy(sample, draft / sample.name)
+        return self.start(inv_id, {"plc_ips": DEMO_PLC_IPS})
 
     def draft_dir(self, inv_id: str) -> Path:
         path = self.uploads / inv_id
@@ -445,6 +454,8 @@ class Handler(BaseHTTPRequestHandler):
             raise HttpError(401, "login required")
         if route == ["logout"] and method == "POST":
             return self._logout()
+        if route == ["demo"] and method == "POST":
+            return self._json(202, app.demo())
         if route == ["doctor"] and method == "GET":
             return self._json(200, app.doctor(force=_int(query, "force", 0, 0, 1) == 1))
         if route == ["investigations"]:

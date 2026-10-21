@@ -304,3 +304,22 @@ def test_restart_marks_interrupted_runs_failed(tmp_path: Path) -> None:
         assert json.loads((inv_dir / "status.json").read_text())["stage"] == "failed"
     finally:
         app.shutdown()
+
+
+def test_one_click_demo_runs_the_packaged_case(client: Client) -> None:
+    status, started = client.json("POST", "/api/demo")
+    assert status == 202 and started["stage"] == "queued"
+    done = client.wait_done(started["id"])
+    record = done["record"]
+    assert {e["name"] for e in record["evidence"]} >= {"ot-demo.pcap", "pump.st"}
+    titles = {d["title"] for d in record["investigation"]["detections"]}
+    assert {"S7comm PLC Stop", "Modbus WRITE_SINGLE_REGISTER"} <= titles
+    assert record["investigation"]["assets"]["10.0.0.20"]["plc_projects"] == ["pump"]
+    assert client.call("POST", "/api/demo", headers={"X-Rehub": ""})[0] == 403
+
+
+def test_status_exposes_tool_states(client: Client) -> None:
+    inv, done = analyzed(client)
+    assert done["status"]["stage"] == "done"
+    _, listing = client.json("GET", "/api/investigations")
+    assert listing["investigations"][0]["stage"] == "done"
