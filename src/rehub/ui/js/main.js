@@ -31,7 +31,7 @@ function topbar(record, mode) {
       h(
         "div",
         { class: "seg", role: "group", "aria-label": "Reading mode" },
-        h("button", { type: "button", "aria-pressed": mode === "summary" ? "true" : "false", onclick: () => navigate(`#/i/${record.id}`) }, "Summary"),
+        h("button", { type: "button", "aria-pressed": mode === "summary" ? "true" : "false", onclick: () => navigate(`#/i/${record.id}/summary`) }, "Summary"),
         h("button", { type: "button", "aria-pressed": mode === "investigator" ? "true" : "false", onclick: () => navigate(`#/i/${record.id}/${lastTab}`) }, "Investigator"),
       ),
     );
@@ -75,12 +75,12 @@ async function showInvestigation(id, tab, detId, query, token) {
       ),
     );
   }
-  const mode = tab ? "investigator" : "summary";
-  if (tab) lastTab = tab;
+  const mode = tab === "summary" ? "summary" : "investigator";
+  if (tab && mode === "investigator") lastTab = tab;
   topbar(record, mode);
   document.title = `Case ${record.id.slice(0, 6)} - ReHub`;
   const ctx = { id: record.id, record };
-  mount(app, mode === "summary" ? renderSummary(record) : renderInvestigator(record, tab, detId, query, ctx));
+  mount(app, mode === "summary" ? renderSummary(record) : renderInvestigator(record, tab || lastTab, detId, query, ctx));
 }
 
 async function route() {

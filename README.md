@@ -19,7 +19,7 @@ Status: work in progress, aimed at Black Hat Arsenal. Engine, CLI, web UI, repor
 ## What you get
 
 - **A plain-language answer.** For the demo case: `10.0.0.66 (unidentified device) sent a PLC stop command to 10.0.0.30 (Siemens AG controller) and 2 register write commands to 10.0.0.20 ... Two independent tools agree on all of them.`
-- **Two reading modes.** Summary for the story, Investigator for the detail, on the same facts. A light and a dark theme.
+- **Two reading modes.** Investigator (the default) for the detail, an optional Summary for the story, on the same facts. A light and a dark theme.
 - **One flow.** Assets, Communication, Detections, Evidence, Report, each with the question it answers and what the engine did.
 - **Tool lanes.** Every detection shows which tools saw it (Zeek, Suricata, tshark, PLC logic), so agreement between independent tools is visible.
 - **Network joined to PLC logic.** A Modbus register write is traced to the PLC variable it overlaps, the logic that reads it and the outputs it drives. The address mapping is shown as an assumption.

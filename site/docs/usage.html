@@ -39,12 +39,12 @@
 <figure class="frame"><img class="only-dark" src="/img/docs/progress.webp" width="1280" height="820" alt="The analyzing screen, with Zeek done and Suricata and tshark working." loading="lazy"><figcaption>Mid-run. Zeek has finished, Suricata and tshark are still working.</figcaption></figure>
 
 <h2 id="summary">Summary</h2>
-<p>Summary is the condensed view for someone who needs the story. It opens with what happened, then the key detections, each with its tool lanes (filled means that tool saw it), then the five-stage flow.</p>
+<p>Summary is the optional condensed view for someone who needs the story, one toggle away in the header. It opens with what happened, then the key detections, each with its tool lanes (filled means that tool saw it), then the five-stage flow.</p>
 <figure class="frame"><img class="only-dark" src="/img/docs/summary.webp" width="1280" height="1050" alt="The Summary screen." loading="lazy"><img class="only-light" src="/img/docs/summary-light.webp" width="1280" height="1050" alt="The Summary screen. (light theme)" loading="lazy"><figcaption>Summary, top of the page.</figcaption></figure>
 <figure class="frame"><img class="only-dark" src="/img/docs/summary-flow.webp" width="1280" height="1000" alt="The lower half of Summary: the flow list and what could not be verified." loading="lazy"><figcaption>Further down: the flow stages and the limits of this analysis.</figcaption></figure>
 
 <h2 id="investigator">Investigator</h2>
-<p>Switch to Investigator in the header to walk the flow stage by stage. Each stage names the question it answers.</p>
+<p>Investigator is the default view. It walks the flow stage by stage, and a write command shows the register and value it set. Each stage names the question it answers.</p>
 <h3>Assets: what devices are on this network?</h3>
 <p>Every device with its IP, a MAC address and vendor where known, its role (client or controller), and the PLC program matched to it. MAC attribution uses ARP replies first. Traffic through a router shows the router's MAC, and ReHub says so instead of guessing.</p>
 <figure class="frame"><img class="only-dark" src="/img/docs/assets.webp" width="1280" height="620" alt="The Assets stage listing six devices." loading="lazy"><figcaption>Assets.</figcaption></figure>
@@ -58,7 +58,7 @@
 <p><b>Show source line</b> opens the exact line in the tool output, with its neighbors. <b>Download file</b> gives the original file. Evidence is only ever served as a download, never rendered.</p>
 <figure class="frame"><img class="only-dark" src="/img/docs/evidence-viewer.webp" width="1280" height="700" alt="The evidence line viewer showing a Zeek log line." loading="lazy"><figcaption>The source line behind a detection, in context.</figcaption></figure>
 <figure class="frame"><img class="only-dark" src="/img/docs/evidence.webp" width="1280" height="1060" alt="The Evidence stage listing every file with its hash." loading="lazy"><figcaption>Evidence: every file with its kind, size and SHA-256.</figcaption></figure>
-<h3>Report: what do I hand to others?</h3>
+<h3>Report: who needs what?</h3>
 <p>A single document with the answer, the detections, the assets and the limits. Print it, or download it as one offline HTML file with no scripts.</p>
 <figure class="frame"><img class="only-dark" src="/img/docs/report.webp" width="1280" height="1000" alt="The Report stage." loading="lazy"><figcaption>The report.</figcaption></figure>
 

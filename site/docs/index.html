@@ -38,7 +38,7 @@
 <li><b>Tool lanes.</b> Every detection shows which tools saw it: Zeek, Suricata, tshark, or the PLC logic. Two independent tools agreeing is shown as corroboration.</li>
 <li><b>Network joined to PLC logic.</b> A Modbus register write is traced to the PLC variable it overlaps, the logic that reads it, and the outputs it drives. The address mapping (wire address N is <code>%MW N</code>) is shown as an assumption, not a fact.</li>
 <li><b>One flow.</b> Assets, Communication, Detections, Evidence, Report. Each step says which question it answers.</li>
-<li><b>Two reading modes.</b> Summary for the story, Investigator for the detail, over the same facts. Dark and light themes.</li>
+<li><b>Two reading modes.</b> Investigator (the default) for the detail, an optional Summary for the story, over the same facts. Dark and light themes.</li>
 <li><b>Evidence you can defend.</b> Every file is fingerprinted with SHA-256. Each detection links to the file, the line and the packets behind it. The report downloads as one offline HTML file with no scripts.</li>
 <li><b>Honest limits.</b> Missing tools, capture loss, ambiguous hardware addresses and files that were not analyzed are listed under "What we could not verify". ATT&amp;CK for ICS techniques are candidates, never verdicts.</li>
 <li><b>Demo without hardware.</b> A built-in pump station capture with a rogue device runs with one button.</li>
