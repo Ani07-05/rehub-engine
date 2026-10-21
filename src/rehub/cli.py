@@ -1,4 +1,6 @@
 import argparse
+import asyncio
+import contextlib
 import os
 import sys
 from collections.abc import Sequence
@@ -7,6 +9,7 @@ from pathlib import Path
 from rehub.api import Config, access_url, print_doctor, serve
 from rehub.auth import load_or_create_token
 from rehub.doctor import run_doctor
+from rehub.gateway import parse_hostport, serve_gateway
 from rehub.pipeline import load_record, run_investigation
 from rehub.textreport import render_text
 from rehub.tools import Executor, subprocess_executor
@@ -44,6 +47,9 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--timeout", type=float, default=1800.0)
     show = sub.add_parser("show", help="print a stored investigation")
     show.add_argument("id")
+    gateway = sub.add_parser("gateway", help="forward a port to the engine on an internal network")
+    gateway.add_argument("--listen", default="0.0.0.0:8080")
+    gateway.add_argument("--upstream", default="engine:8080")
     doctor = sub.add_parser("doctor", help="check that the tools and the data folder work")
     doctor.add_argument("--quick", action="store_true", help="skip the sample-capture self test")
     token = sub.add_parser("token", help="print the sign-in link for the web UI")
@@ -63,8 +69,17 @@ def main(argv: Sequence[str] | None = None, execute: Executor = subprocess_execu
     parser = build_parser()
     args = parser.parse_args(argv)
     data = Path(args.data).expanduser()
+    if args.command == "gateway":
+        listen_host, listen_port = parse_hostport(args.listen, 8080)
+        up_host, up_port = parse_hostport(args.upstream, 8080)
+        print(f"ReHub gateway {listen_host}:{listen_port} -> {up_host}:{up_port}", flush=True)
+        with contextlib.suppress(KeyboardInterrupt):
+            asyncio.run(serve_gateway(listen_host, listen_port, up_host, up_port))
+        return 0
     if args.command == "doctor":
-        report = run_doctor(data, execute, auth_enabled=True, quick=args.quick)
+        report = run_doctor(
+            data, execute, auth_enabled=bool(Config.from_env(data).token), quick=args.quick
+        )
         print_doctor(report)
         return 1 if report.status == "fail" else 0
     if args.command == "token":
