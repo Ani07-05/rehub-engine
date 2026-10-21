@@ -204,3 +204,41 @@ def test_old_records_without_version_still_load(tmp_path: Path) -> None:
     path.write_text(json.dumps(raw))
     loaded = load_record(tmp_path / "data", rec.id)
     assert loaded is not None and loaded.engine_version == ""
+
+
+def test_status_reports_each_tool_while_it_runs(tmp_path: Path) -> None:
+    import threading
+
+    gate = threading.Event()
+    seen: dict[str, str] = {}
+
+    class Blocking(FixtureExecutor):
+        def __call__(self, argv, **kw):  # type: ignore[no-untyped-def]
+            if argv[0] == "zeek" and "-r" in argv:
+                status = read_status(tmp_path / "data", "slowrun")
+                seen.update((status or {}).get("tools", {}))
+                gate.set()
+            return super().__call__(argv, **kw)
+
+    run_investigation([PCAP], tmp_path / "data", execute=Blocking(), investigation_id="slowrun")
+    assert gate.is_set()
+    assert seen.get("zeek") == "running"
+    assert set(seen) == {"zeek", "suricata", "tshark"}
+    final = read_status(tmp_path / "data", "slowrun")
+    assert final is not None and final["stage"] == "done"
+    assert final["tools"] == {"zeek": "done", "suricata": "done", "tshark": "done"}
+
+
+def test_failed_tool_shows_as_failed_in_status(tmp_path: Path) -> None:
+    rec, _ = run(tmp_path, [PCAP], fail={"suricata"})
+    status = read_status(tmp_path / "data", rec.id)
+    assert status is not None and status["tools"]["suricata"] == "failed"
+    assert status["tools"]["zeek"] == "done"
+
+
+def test_log_only_upload_leaves_tools_idle(tmp_path: Path) -> None:
+    rec = run_investigation(
+        [DEMO / "suricata" / "eve.json"], tmp_path / "data", execute=FixtureExecutor()
+    )
+    status = read_status(tmp_path / "data", rec.id)
+    assert status is not None and status["tools"] == {}

@@ -1,4 +1,5 @@
 import json
+import threading
 import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
@@ -94,14 +95,21 @@ def investigation_dir(data_dir: Path, inv_id: str) -> Path:
     return data_dir / "investigations" / inv_id
 
 
-def _write_status(inv_dir: Path, stage: str, detail: str = "") -> None:
-    payload = {"stage": stage, "detail": detail, "updated": datetime.now(UTC).isoformat()}
+def _write_status(
+    inv_dir: Path, stage: str, detail: str = "", tools: dict[str, str] | None = None
+) -> None:
+    payload: dict[str, Any] = {
+        "stage": stage,
+        "detail": detail,
+        "tools": tools or {},
+        "updated": datetime.now(UTC).isoformat(),
+    }
     tmp = inv_dir / (STATUS + ".tmp")
     tmp.write_text(json.dumps(payload))
     tmp.replace(inv_dir / STATUS)
 
 
-def read_status(data_dir: Path, inv_id: str) -> dict[str, str] | None:
+def read_status(data_dir: Path, inv_id: str) -> dict[str, Any] | None:
     path = investigation_dir(data_dir, inv_id) / STATUS
     return json.loads(path.read_text()) if path.is_file() else None
 
@@ -195,20 +203,27 @@ def _run_tools(
     runs_root: Path,
     execute: Executor,
     timeout: float,
+    notify: Callable[[str, str], None] | None = None,
 ) -> tuple[list[ToolRun], list[tuple[Evidence, Path]]]:
     src = blob_path(store, pcap.sha256)
     root = runs_root / pcap.sha256[:12]
 
     def one(tool: str) -> tuple[ToolRun, list[tuple[Evidence, Path]]]:
         started = time.monotonic()
+        if notify:
+            notify(tool, "running")
         try:
             output = TOOL_RUNNERS[tool](src, root / tool, execute, timeout)
         except ToolError as exc:
+            if notify:
+                notify(tool, "failed")
             run = ToolRun(
                 tool, pcap.name, pcap.sha256, False, str(exc), [], time.monotonic() - started
             )
             return run, []
         derived = _derived(pcap, tool, output, root)
+        if notify:
+            notify(tool, "done")
         run = ToolRun(
             tool,
             pcap.name,
@@ -257,8 +272,14 @@ def run_investigation(
         id=inv_id, created=datetime.now(UTC).isoformat(), engine_version=engine_version()
     )
 
+    tool_states: dict[str, str] = {}
+    state_lock = threading.Lock()
+    current = {"stage": "ingest", "detail": ""}
+
     def progress(stage: str, detail: str = "") -> None:
-        _write_status(inv_dir, stage, detail)
+        current.update(stage=stage, detail=detail)
+        with state_lock:
+            _write_status(inv_dir, stage, detail, dict(tool_states))
         if on_progress:
             on_progress(f"{stage}: {detail}" if detail else stage)
 
@@ -282,7 +303,17 @@ def run_investigation(
             path = blob_path(store, ev.sha256)
             if ev.kind == EvidenceKind.PCAP:
                 progress("analyze", f"running tools on {ev.name}")
-                runs, derived = _run_tools(ev, store, inv_dir / "runs", execute, timeout)
+                with state_lock:
+                    tool_states.update({t: "queued" for t in TOOL_RUNNERS})
+
+                def notify(tool: str, state: str) -> None:
+                    with state_lock:
+                        tool_states[tool] = state
+                        _write_status(
+                            inv_dir, current["stage"], current["detail"], dict(tool_states)
+                        )
+
+                runs, derived = _run_tools(ev, store, inv_dir / "runs", execute, timeout, notify)
                 record.tool_runs += runs
                 for run in runs:
                     if not run.ok:
