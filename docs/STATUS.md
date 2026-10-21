@@ -41,7 +41,7 @@ Loopback bind by default, Host allowlist (DNS rebinding), `X-Rehub` header and O
 
 ## Landing page
 
-`site/index.html` (built to the `.impeccable/surfaces/site-index-html.md` contract: incident briefing structure, v1's trust sections). `scripts/install.sh` is now one self-contained file (compose embedded by `scripts/embed-compose.py`; a test keeps it equal to `compose.yml`). Before announcing the one-line install: make the repository public, let CI publish `ghcr.io/ani07-05/rehub-engine` and make that package public, deploy `site/` (new Vercel project; do not reuse the v1 project), then remove the pre-release notes from the page. Screenshots are real UI captures of the synthetic demo case (`site/img/PROVENANCE.md`).
+`site/index.html` (built to the `.impeccable/surfaces/site-index-html.md` contract: incident briefing structure, v1's trust sections). `scripts/install.sh` is now one self-contained file (compose embedded by `scripts/embed-compose.py`; a test keeps it equal to `compose.yml`). Before announcing the one-line install: make the repository public, let CI publish `ghcr.io/ani07-05/rehub-engine` and make that package public, then remove the pre-release notes from the page and redeploy (`scripts/deploy-site.sh`). The site is already deployed as Vercel project `rehub-engine` at https://rehub-engine.vercel.app (separate from the v1 project `rehub` at rehub-rose.vercel.app, which was left untouched); it is CLI-deployed, not connected to Git. Screenshots are real UI captures of the synthetic demo case (`site/img/PROVENANCE.md`).
 
 ## Known limits
 
