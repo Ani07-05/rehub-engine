@@ -26,7 +26,11 @@ def test_narrate_logic_with_node(tmp_path: Path) -> None:
     path = tmp_path / "record.json"
     path.write_text(json.dumps(to_jsonable(record)))
     proc = subprocess.run(
-        [shutil.which("node") or "node", "--test", str(ROOT / "tests" / "ui")],
+        [
+            shutil.which("node") or "node",
+            "--test",
+            *sorted(str(p) for p in (ROOT / "tests" / "ui").glob("*.test.mjs")),
+        ],
         capture_output=True,
         text=True,
         env={**os.environ, "REHUB_RECORD": str(path)},
