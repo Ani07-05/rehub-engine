@@ -2,6 +2,7 @@ import hashlib
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 
+from rehub.modbus import MODBUS_CODES, REGISTER_CODES, note_write, write_from_attrs
 from rehub.model import (
     MAC_ARP,
     MAC_INFERRED,
@@ -36,17 +37,12 @@ S7_CONTROL = {"stop": "high", "download": "high", "plc control": "high", "upload
 REDUNDANCY_MAC_PREFIXES = ("00:00:5e:00:01", "00:00:5e:00:02", "00:00:0c:07:ac", "00:00:0c:9f:f")
 MERGE_WINDOW = 1.0
 REF_CAP = 25
-MODBUS_REGISTER_FUNCS = frozenset({"6", "16", "22", "23"})
+WRITE_CAP = 50
+ZEEK_MODBUS_DETAIL_LOGS = frozenset(
+    {"modbus_detailed", "modbus_mask_write_register", "modbus_read_write_multiple_registers"}
+)
+LINK_CAP = 20
 MODBUS_GAP = 2.0
-MODBUS_CODES = {
-    "READ_COILS": 1, "READ_DISCRETE_INPUTS": 2, "READ_HOLDING_REGISTERS": 3,
-    "READ_INPUT_REGISTERS": 4, "WRITE_SINGLE_COIL": 5, "WRITE_SINGLE_REGISTER": 6,
-    "READ_EXCEPTION_STATUS": 7, "DIAGNOSTICS": 8, "GET_COMM_EVENT_COUNTER": 11,
-    "GET_COMM_EVENT_LOG": 12, "WRITE_MULTIPLE_COILS": 15, "WRITE_MULTIPLE_REGISTERS": 16,
-    "REPORT_SLAVE_ID": 17, "READ_FILE_RECORD": 20, "WRITE_FILE_RECORD": 21,
-    "MASK_WRITE_REGISTER": 22, "READ_WRITE_MULTIPLE_REGISTERS": 23, "READ_FIFO_QUEUE": 24,
-    "ENCAP_INTERFACE_TRANSPORT": 43,
-}  # fmt: skip
 EXPECTED_TOOLS = ("zeek", "suricata", "tshark")
 FLOW_PRIORITY = {"zeek": 0, "suricata": 1, "tshark": 2}
 
@@ -246,16 +242,26 @@ def _control(ev: Event) -> tuple[str, str, str, list[str]] | None:
 def _detail_index(events: list[Event]) -> dict[tuple[str | None, str, str], list[Event]]:
     index: dict[tuple[str | None, str, str], list[Event]] = defaultdict(list)
     for e in events:
-        if e.proto == "modbus_detailed":
+        if e.proto in ZEEK_MODBUS_DETAIL_LOGS and e.attrs.get("request_response") != "RESPONSE":
             index[(e.flow_key, e.attrs.get("tid", ""), e.attrs.get("func", ""))].append(e)
     return index
 
 
-def _detail_for(index: dict[tuple[str | None, str, str], list[Event]], ev: Event) -> Event | None:
+def _detail_attrs(
+    index: dict[tuple[str | None, str, str], list[Event]], ev: Event
+) -> dict[str, str]:
     candidates = index.get((ev.flow_key, ev.attrs.get("tid", ""), ev.attrs.get("func", "")), [])
-    if not candidates:
-        return None
-    return min(candidates, key=lambda d: abs((d.ts or 0.0) - (ev.ts or 0.0)))
+    nearest: dict[str, Event] = {}
+    for c in candidates:
+        best = nearest.get(c.proto or "")
+        if best is None or abs((c.ts or 0.0) - (ev.ts or 0.0)) < abs(
+            (best.ts or 0.0) - (ev.ts or 0.0)
+        ):
+            nearest[c.proto or ""] = c
+    merged: dict[str, str] = {}
+    for proto in sorted(nearest, key=lambda p: p != "modbus_detailed"):
+        merged.update(nearest[proto].attrs)
+    return merged
 
 
 def _detection_id(*parts: object) -> str:
@@ -318,6 +324,11 @@ def _merge_by_time(found: dict[tuple[object, ...], Detection]) -> None:
         target.sources.extend(s for s in alert.sources if s not in target.sources)
         target.refs.extend(alert.refs[: max(0, REF_CAP - len(target.refs))])
         target.attrs.update({k: v for k, v in alert.attrs.items() if k not in target.attrs})
+        for w in alert.writes:
+            if not note_write(target.writes, w, WRITE_CAP):
+                target.attrs["writes_omitted"] = str(
+                    int(target.attrs.get("writes_omitted", "0")) + 1
+                )
         if SEVERITY_RANK.get(alert.severity or "", 0) > SEVERITY_RANK.get(target.severity or "", 0):
             target.severity = alert.severity
         _widen(target, alert.first_ts)
@@ -332,6 +343,7 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
     for ev in sorted(events, key=lambda e: (e.ts is None, e.ts or 0.0)):
         attack: list[str] = []
         extra: dict[str, str]
+        write_attrs: dict[str, str] | None = None
         if ev.kind == EventKind.LOGIC:
             rule = f"plc:{ev.attrs.get('rule', 'logic')}"
             title, severity = f"PLC logic: {ev.summary}", ev.severity
@@ -349,21 +361,17 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
                     or k in ("category", "modbus.request.function_raw")
                 )
             }
+            if ev.tool == "suricata":
+                write_attrs = ev.attrs
         else:
             control = _control(ev)
             if control is None:
                 continue
             rule, title, severity, attack = control
             extra = {"func": ev.attrs["func"]} if "func" in ev.attrs else {}
-            d = _detail_for(detail, ev)
-            if d:
-                extra.update(
-                    {
-                        k: d.attrs[k]
-                        for k in ("address", "quantity", "request_values")
-                        if k in d.attrs
-                    }
-                )
+            d = _detail_attrs(detail, ev)
+            write_attrs = {**ev.attrs, **d}
+            extra.update({k: d[k] for k in ("address", "quantity", "request_values") if k in d})
         base = _group_key(ev, rule, title)
         if base[0] == "modbus":
             index = sequence.get(base, 0)
@@ -395,23 +403,14 @@ def _build_detections(inv: Investigation, events: list[Event]) -> None:
             det.title = title
         _absorb(det, ev, Source(ev.tool, rule, title), severity, attack)
         det.attrs.update({k: v for k, v in extra.items() if k not in det.attrs})
+        w = write_from_attrs(write_attrs, ev.tool) if write_attrs is not None else None
+        if w is not None and not note_write(det.writes, w, WRITE_CAP):
+            det.attrs["writes_omitted"] = str(int(det.attrs.get("writes_omitted", "0")) + 1)
     _merge_by_time(found)
     inv.detections = sorted(
         found.values(),
         key=lambda d: (-SEVERITY_RANK.get(d.severity or "", 0), d.first_ts or 0.0, d.id),
     )
-
-
-def _write_target(det: Detection) -> tuple[int, int, str] | None:
-    func = det.attrs.get("func", "")
-    raw = det.attrs.get("modbus.request.function_raw", "")
-    is_register = "REGISTER" in func or raw in MODBUS_REGISTER_FUNCS
-    address = det.attrs.get("address") or det.attrs.get("modbus.request.write.address", "")
-    if not is_register or not address.isdigit():
-        return None
-    quantity = det.attrs.get("quantity") or det.attrs.get("modbus.request.write.quantity") or "1"
-    values = det.attrs.get("request_values") or det.attrs.get("modbus.request.write.data", "")
-    return int(address), int(quantity) if quantity.isdigit() else 1, values
 
 
 def _link_plc(inv: Investigation, projects: Sequence[PlcProject]) -> None:
@@ -431,11 +430,15 @@ def _link_plc(inv: Investigation, projects: Sequence[PlcProject]) -> None:
                     "network evidence."
                 )
         for det in inv.detections:
-            target = _write_target(det)
-            if target is None or det.dst not in project.controller_ips:
+            if det.dst not in project.controller_ips:
                 continue
-            address, quantity, values = target
-            det.plc.extend(modbus_impacts(project, address, quantity, values))
+            seen: set[tuple[str, str]] = set()
+            for w in [w for w in det.writes if w.code in REGISTER_CODES][:LINK_CAP]:
+                shown = f"[{', '.join(w.values)}]" if w.values else ""
+                for impact in modbus_impacts(project, w.address, w.quantity, shown):
+                    if (impact.variable, impact.new_values) not in seen:
+                        seen.add((impact.variable, impact.new_values))
+                        det.plc.append(impact)
 
 
 def _build_arp_conflicts(inv: Investigation, events: list[Event]) -> None:

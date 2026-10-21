@@ -7,12 +7,17 @@ from rehub.model import (
     EvidenceRef,
     Flow,
     Investigation,
+    ModbusWrite,
     PlcImpact,
     Source,
 )
 from rehub.schema import Evidence, EvidenceKind
 
-COMPUTED = {"Detection": ("tools", "rules", "corroborated"), "Asset": ("kind",)}
+COMPUTED = {
+    "Detection": ("tools", "rules", "corroborated"),
+    "Asset": ("kind",),
+    "ModbusWrite": ("count",),
+}
 
 
 def to_jsonable(obj: Any) -> Any:
@@ -62,6 +67,10 @@ def detection_from_dict(d: dict[str, Any]) -> Detection:
             **base,
             "sources": [Source(**s) for s in d["sources"]],
             "plc": [PlcImpact(**i) for i in d["plc"]],
+            "writes": [
+                ModbusWrite(**{k: v for k, v in w.items() if k not in COMPUTED["ModbusWrite"]})
+                for w in d.get("writes", [])
+            ],
             "refs": _refs(d["refs"]),
         }
     )

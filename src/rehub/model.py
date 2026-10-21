@@ -35,6 +35,21 @@ class PlcImpact:
 
 
 @dataclass(slots=True)
+class ModbusWrite:
+    code: int
+    kind: str
+    address: int
+    quantity: int
+    values: list[str]
+    op: str
+    seen: dict[str, int]
+
+    @property
+    def count(self) -> int:
+        return max(self.seen.values(), default=0)
+
+
+@dataclass(slots=True)
 class Asset:
     id: str
     ips: set[str] = field(default_factory=set)
@@ -88,6 +103,7 @@ class Detection:
     sources: list[Source] = field(default_factory=list)
     attack: list[str] = field(default_factory=list)
     plc: list[PlcImpact] = field(default_factory=list)
+    writes: list[ModbusWrite] = field(default_factory=list)
     attrs: dict[str, str] = field(default_factory=dict)
     refs: list[EvidenceRef] = field(default_factory=list)
 
