@@ -70,6 +70,6 @@ export function renderSummary(record) {
         : h("p", { class: "muted" }, "Nothing was flagged as missing. A finding that is not listed here was still not proven safe."),
       hasAttack ? h("p", { class: "small muted" }, ATTACK_NOTE) : null,
     ),
-    h("p", {}, h("a", { class: "btn", href: `#/i/${record.id}/findings` }, "Dig deeper in Investigator mode")),
+    h("p", { class: "filters" }, h("a", { class: "btn", href: `#/i/${record.id}/findings` }, "Dig deeper in Investigator mode"), h("a", { class: "btn", href: `#/i/${record.id}/report` }, "Open the report")),
   );
 }

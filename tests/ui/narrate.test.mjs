@@ -92,3 +92,14 @@ test("severity words", () => {
   assert.equal(severityWord("high"), "High");
   assert.equal(severityWord(null), "Info");
 });
+
+test("confidence wording distinguishes corroboration from static review hints", async () => {
+  const { confidenceText, reportFileName } = await import("../../src/rehub/ui/js/narrate.js");
+  const record = load();
+  assert.match(confidenceText(byTitle(record, "Modbus WRITE_SINGLE_REGISTER")), /^Confirmed by two independent tools \(Suricata and Zeek\)\.$/);
+  const plc = record.investigation.detections.find((d) => d.tools.length === 1 && d.tools[0] === "plc");
+  assert.match(confidenceText(plc), /not a network observation/);
+  const single = { tools: ["suricata"], corroborated: false };
+  assert.match(confidenceText(single), /one tool only \(Suricata\); treat as unconfirmed/);
+  assert.equal(reportFileName(record), `rehub-report-${record.id}.html`);
+});

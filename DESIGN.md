@@ -12,6 +12,15 @@ colors:
   severity-high: "#ff6b5e"
   severity-medium: "#f2b24a"
   severity-low: "#9aa3ad"
+  scrollbar-thumb: "#333333"
+  scrollbar-track-hover: "#3a3a3a"
+  paper-ground: "#ffffff"
+  paper-text: "#111111"
+  paper-text-secondary: "#444444"
+  paper-text-tertiary: "#666666"
+  paper-severity-high: "#b3261e"
+  paper-severity-medium: "#8a5a00"
+  paper-severity-low: "#4a5560"
 typography:
   headline:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
@@ -40,15 +49,24 @@ typography:
     fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.4
+  map-label:
+    fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "10.5px"
+    fontWeight: 400
+    lineHeight: 1.2
   data:
     fontFamily: "ui-monospace, SF Mono, Menlo, Consolas, monospace"
     fontSize: "0.8125rem"
     fontWeight: 400
     lineHeight: 1.55
 rounded:
+  hairline: "2px"
+  focus: "4px"
+  chip: "6px"
   control: "8px"
   panel: "12px"
   lane: "10px"
+  drop: "16px"
 spacing:
   xs: "0.35rem"
   sm: "0.6rem"
@@ -131,10 +149,14 @@ A fixed rem scale (no fluid type) with a ~1.2 step: 0.75 / 0.8125 / 0.9375 / 1.1
 - **Title** (600, 1.125rem): section headings and finding titles.
 - **Body** (400, 0.9375rem): running text.
 - **Label** (500, 0.8125rem): table headers, meta lines, chips.
+- **Map label** (400, 10.5px): node captions and edge labels inside the SVG flow map only.
 - **Data** (mono, 0.8125rem): IPs, hashes, code lines, packet fields; tabular numerals.
 
 ### Named Rules
 **The Mono-Means-Data Rule.** Monospace is only for things a person might copy: addresses, hashes, variable names, code. Never as a "technical" costume on labels.
+
+### Paper theme (print and downloaded report)
+The report switches the same system to a light "paper" theme for print and for the standalone HTML download: ground `#ffffff`, text `#111111`, secondary `#444444`, tertiary `#666666`, and darker severity colours (`#b3261e`, `#8a5a00`, `#4a5560`) that keep 4.5:1 on white. Structure is still hairline outlines; shapes and words still carry severity. The downloaded file has no scripts and a CSP that allows nothing but its own styles.
 
 ## Layout
 
@@ -149,7 +171,7 @@ Flat. There are no shadows anywhere. Depth is expressed only by outline brightne
 
 ## Shapes
 
-Rounded rectangles at three radii: **8px** controls, **10px** lanes and variable boxes, **12px** panels and rows; the drop zone uses 16px. Pills are not used. Dashed outlines mean "not seen" (dim lanes) or "drop target"; solid means present.
+Rounded rectangles: **8px** controls, **10px** lanes and variable boxes, **12px** panels and rows, **6px** chips and the segmented control's inner buttons, **16px** the drop zone, **4px** focus rings, **2px** progress tracks. Pills are not used. Dashed outlines mean "not seen" (dim lanes) or "drop target"; solid means present.
 
 ## Components
 

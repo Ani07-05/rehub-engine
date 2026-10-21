@@ -2,7 +2,7 @@
 
 Local, offline investigation engine for OT network evidence. One upload runs Zeek, Suricata and tshark, correlates their output with PLC logic files, and keeps tool attribution on every finding.
 
-Status: work in progress. Engine, CLI, API and web UI work; report export and the installer are not built yet. See `docs/STATUS.md`.
+Status: work in progress. Engine, CLI, API, web UI and report export work; the installer is not built yet. See `docs/STATUS.md`.
 
 ## What it does today
 

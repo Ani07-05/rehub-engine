@@ -201,3 +201,14 @@ export const KIND_NAMES = {
   csv_historian: "Historian export (CSV)",
   unknown: "Unrecognized file",
 };
+
+export function reportFileName(record) {
+  return `rehub-report-${record.id}.html`;
+}
+
+export function confidenceText(d) {
+  if (d.tools.length === 1 && d.tools[0] === "plc") return "Review hint from reading the PLC file. It is not a network observation, so it is not confirmed or refuted by the capture.";
+  return d.corroborated
+    ? `Confirmed by two independent tools (${toolList(d.tools)}).`
+    : `Reported by one tool only (${toolList(d.tools)}); treat as unconfirmed.`;
+}

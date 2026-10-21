@@ -5,12 +5,14 @@ import { KIND_NAMES, deviceLabel, isDerived, lanes, severityWord, timeText } fro
 import { renderFinding } from "./finding.js";
 import { flowMap } from "./flowmap.js";
 import { laneMini, sevBadge, showLines, showPackets } from "./shared.js";
+import { reportTab } from "./report.js";
 
 const TABS = [
   ["devices", "Devices"],
   ["communication", "Communication"],
   ["findings", "Findings"],
   ["evidence", "Evidence"],
+  ["report", "Report"],
 ];
 const RANK = { high: 3, medium: 2, low: 1 };
 
@@ -202,6 +204,6 @@ function evidenceTab(record, ctx) {
 }
 
 export function renderInvestigator(record, tab, selectedId, query, ctx) {
-  const body = { devices: () => devicesTab(record), communication: () => communicationTab(record, ctx), findings: () => findingsTab(record, ctx, selectedId, query), evidence: () => evidenceTab(record, ctx) }[tab] || (() => findingsTab(record, ctx, selectedId, query));
+  const body = { devices: () => devicesTab(record), communication: () => communicationTab(record, ctx), findings: () => findingsTab(record, ctx, selectedId, query), evidence: () => evidenceTab(record, ctx), report: () => reportTab(record) }[tab] || (() => findingsTab(record, ctx, selectedId, query));
   return h("div", { class: "wide stack-lg" }, flowNav(record, tab), body());
 }

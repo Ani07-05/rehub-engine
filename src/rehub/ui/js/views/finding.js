@@ -1,9 +1,9 @@
 import { h, mount } from "../dom.js";
 import { api } from "../api.js";
-import { ATTACK_NOTE, deviceText, parseRef, plainMeaning, timeText, toolList } from "../narrate.js";
+import { ATTACK_NOTE, confidenceText, deviceText, parseRef, plainMeaning, timeText, toolList } from "../narrate.js";
 import { codeBlock, evidenceBySha, laneBig, sevBadge, showLines, showPackets } from "./shared.js";
 
-function plcImpact(impact) {
+export function plcImpact(impact) {
   const readerLines = impact.readers.map((r) => {
     const m = /^([^:]+(?::[^:]*)?:\d+): (.*)$/.exec(r);
     return m ? [m[1], m[2]] : ["", r];
@@ -81,7 +81,7 @@ export function renderFinding(record, d, ctx) {
       "header",
       { class: "stack" },
       h("h2", { id: "finding-title" }, d.title),
-      h("div", { class: "filters" }, sevBadge(d.severity), h("span", { class: "muted small" }, `${d.count} ${d.count === 1 ? "event" : "events"}`), h("span", { class: "muted small" }, timeText(d.first_ts))),
+      h("div", { class: "filters" }, sevBadge(d.severity), h("span", { class: "muted small" }, `${d.count} ${d.count === 1 ? "event" : "events"}`), d.first_ts != null ? h("span", { class: "muted small" }, timeText(d.first_ts)) : null),
       d.src || d.dst
         ? h(
             "dl",
@@ -96,7 +96,7 @@ export function renderFinding(record, d, ctx) {
           )
         : null,
     ),
-    h("section", { class: "stack" }, h("h3", {}, "Who saw it"), laneBig(d, record), d.corroborated ? h("p", { class: "small muted" }, "Two independent tools reported this, which raises confidence.") : h("p", { class: "small muted" }, "Only one tool reported this. Treat it as unconfirmed until you check the evidence.")),
+    h("section", { class: "stack" }, h("h3", {}, "Who saw it"), laneBig(d, record), h("p", { class: "small muted" }, confidenceText(d))),
     h("section", { class: "stack" }, h("h3", {}, "What this means"), h("p", {}, plainMeaning(d)), attackBlock),
     d.plc.length
       ? h("section", { class: "stack" }, h("h3", {}, "Effect on the PLC program"), d.plc.map(plcImpact), h("p", { class: "small muted" }, d.plc[0].assumption))
