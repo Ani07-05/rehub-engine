@@ -115,37 +115,11 @@ export function headline(record) {
   return out;
 }
 
-function decodeRegisters(data) {
-  const out = [];
-  for (let i = 0; i + 1 < data.length; i += 2) out.push(((data.charCodeAt(i) & 0xff) << 8) | (data.charCodeAt(i + 1) & 0xff));
-  return out;
-}
-
-export function writeDetail(d) {
-  const a = d.attrs || {};
-  const raw = a["modbus.request.function_raw"] || "";
-  const func = a.func || "";
-  const address = a.address || a["modbus.request.write.address"];
-  const write = /WRITE/.test(func) || ["5", "6", "15", "16"].includes(raw);
-  const register = /REGISTER/.test(func) || raw === "6" || raw === "16";
-  const coil = /COIL/.test(func) || raw === "5" || raw === "15";
-  if (!write || !(register || coil) || !/^\d+$/.test(address || "")) return null;
-  const start = Number(address);
-  const qty = Number(a.quantity || a["modbus.request.write.quantity"] || 1) || 1;
-  let values = null;
-  try {
-    const parsed = JSON.parse(a.request_values || "");
-    if (Array.isArray(parsed)) values = parsed.map(String);
-  } catch {}
-  const data = a["modbus.request.write.data"];
-  if (!values && data != null) {
-    if (/^\d+$/.test(data)) values = [data];
-    else if (register) values = decodeRegisters(data).map(String);
-  }
-  const noun = register ? "register" : "coil";
-  const target = qty > 1 ? `${noun}s ${start} to ${start + qty - 1}` : `${noun} ${start}`;
-  const fn = func || (raw ? `function ${raw}` : "");
-  return { target, values, fn };
+export function writeLine(w) {
+  const noun = w.kind;
+  const target = w.quantity > 1 ? `${noun}s ${w.address} to ${w.address + w.quantity - 1}` : `${noun} ${w.address}`;
+  const verb = w.op === "mask" ? " masked with " : " set to ";
+  return { target, verb, value: w.values.length ? w.values.join(", ") : null };
 }
 
 export function impactLine(d) {

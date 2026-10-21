@@ -1,6 +1,6 @@
 import { h } from "../dom.js";
 import { api } from "../api.js";
-import { ATTACK_NOTE, confidenceText, deviceText, parseRef, plainMeaning, timeText, toolList, writeDetail } from "../narrate.js";
+import { ATTACK_NOTE, confidenceText, deviceText, parseRef, plainMeaning, timeText, toolList, writeLine } from "../narrate.js";
 import { evidenceBySha, laneBig, sevBadge, showLines, showPackets } from "./shared.js";
 
 export function plcImpact(impact) {
@@ -73,8 +73,8 @@ export function renderFinding(record, d, ctx) {
         h("p", { class: "xs faint" }, ATTACK_NOTE),
       )
     : null;
-  const write = writeDetail(d);
-  const plcVars = write ? [...new Set(d.plc.map((p) => p.variable))] : [];
+  const writes = d.writes || [];
+  const plcVars = writes.length ? [...new Set(d.plc.map((p) => p.variable))] : [];
   const attrs = Object.entries(d.attrs || {}).filter(([k]) => !["project", "variable"].includes(k));
   return h(
     "article",
@@ -93,16 +93,24 @@ export function renderFinding(record, d, ctx) {
             h("dt", {}, "To"),
             h("dd", {}, d.dst ? deviceText(inv, d.dst) : "not applicable"),
             flow ? [h("dt", {}, "Conversation"), h("dd", { class: "mono" }, `${flow.src}:${flow.sport} to ${flow.dst}:${flow.dport} ${flow.proto || ""} ${flow.service || ""}`)] : null,
-            write
+            writes.length
               ? [
-                  h("dt", { class: "hl" }, "Wrote"),
+                  h("dt", { class: "hl" }, writes.length > 1 ? `Wrote (${writes.length})` : "Wrote"),
                   h(
                     "dd",
                     { class: "hl writebox" },
-                    h("b", { class: "mono" }, write.target),
-                    write.values ? [" set to ", h("b", { class: "mono" }, write.values.join(", "))] : " (value not captured)",
-                    h("span", { class: "xs faint" }, ` Modbus ${write.fn}`),
-                    plcVars.length ? h("span", { class: "small" }, " Maps to PLC variable ", h("b", { class: "mono" }, plcVars.join(", "))) : null,
+                    writes.map((w) => {
+                      const l = writeLine(w);
+                      return h(
+                        "div",
+                        { class: "wline" },
+                        h("b", { class: "mono" }, l.target),
+                        l.value ? [l.verb, h("b", { class: "mono" }, l.value)] : " (value not captured)",
+                        w.count > 1 ? h("span", { class: "xs faint" }, ` x${w.count}`) : null,
+                      );
+                    }),
+                    d.attrs.writes_omitted ? h("div", { class: "xs faint" }, `${d.attrs.writes_omitted} more writes not listed. See the evidence.`) : null,
+                    plcVars.length ? h("div", { class: "small" }, "Maps to PLC variable ", h("b", { class: "mono" }, plcVars.join(", "))) : null,
                   ),
                 ]
               : null,
