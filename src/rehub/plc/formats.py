@@ -1,7 +1,7 @@
 import re
 import xml.etree.ElementTree as ET
 from collections.abc import Iterator
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from rehub.plc import st
 from rehub.plc.model import PlcParseError, PlcProject, Statement, Variable
@@ -53,6 +53,10 @@ L5X_DEST = {
 INSTRUCTION = re.compile(r"\b([A-Z][A-Z0-9_]*)\(")
 
 
+def _stem(name: str) -> str:
+    return PurePosixPath(name).stem
+
+
 def _read(path: Path) -> bytes:
     if path.stat().st_size > MAX_BYTES:
         raise PlcParseError(f"{path.name}: larger than {MAX_BYTES} bytes")
@@ -86,7 +90,7 @@ def load_st(
     path: Path, name: str, evidence_id: str = "", asset_ip: str | None = None
 ) -> PlcProject:
     text = _read(path).decode("utf-8-sig", errors="replace")
-    project = PlcProject(name=path.stem, format="st", source=name, evidence_id=evidence_id)
+    project = PlcProject(name=_stem(name), format="st", source=name, evidence_id=evidence_id)
     if asset_ip:
         project.controller_ips.add(asset_ip)
     pous = st.split_pous(text)
@@ -147,7 +151,7 @@ def load_plcopen(
     root = _safe_xml(path)
     header = next(_descendants(root, "contentHeader"), None)
     project = PlcProject(
-        name=(header.get("name") if header is not None else None) or path.stem,
+        name=(header.get("name") if header is not None else None) or _stem(name),
         format="plcopen",
         source=name,
         evidence_id=evidence_id,
@@ -260,7 +264,7 @@ def load_l5x(
     if controller is None:
         raise PlcParseError(f"{name}: no Controller element")
     project = PlcProject(
-        name=controller.get("Name", path.stem),
+        name=controller.get("Name", _stem(name)),
         format="l5x",
         source=name,
         evidence_id=evidence_id,

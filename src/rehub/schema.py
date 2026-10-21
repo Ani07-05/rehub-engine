@@ -7,6 +7,7 @@ class EvidenceKind(StrEnum):
     SURICATA_EVE = "suricata_eve"
     ZEEK_LOG = "zeek_log"
     TSHARK_JSON = "tshark_json"
+    TSHARK_TSV = "tshark_tsv"
     PLC_L5X = "plc_l5x"
     PLC_PLCOPEN = "plc_plcopen"
     PLC_ST = "plc_st"
