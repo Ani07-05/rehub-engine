@@ -40,3 +40,17 @@ def test_missing_file_and_bad_plc_ip(tmp_path: Path, capsys: pytest.CaptureFixtu
     assert main(["--data", str(tmp_path), "analyze", str(tmp_path / "x.pcap")]) == 2
     with pytest.raises(SystemExit):
         main(["--data", str(tmp_path), "analyze", PCAP, "--plc-ip", "nonsense"])
+
+
+def test_serve_command_builds_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, object] = {}
+
+    def fake_serve(config: object, execute: object) -> None:
+        seen["config"] = config
+
+    monkeypatch.setattr("rehub.cli.serve", fake_serve)
+    monkeypatch.setenv("REHUB_HOST", "0.0.0.0")
+    assert main(["--data", str(tmp_path / "d"), "serve", "--port", "9999"]) == 0
+    config = seen["config"]
+    assert (config.host, config.port) == ("0.0.0.0", 9999)  # type: ignore[attr-defined]
+    assert (tmp_path / "d").is_dir()

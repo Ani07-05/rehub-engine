@@ -4,6 +4,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from rehub.api import Config, serve
 from rehub.pipeline import load_record, run_investigation
 from rehub.textreport import render_text
 from rehub.tools import Executor, subprocess_executor
@@ -41,6 +42,11 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--timeout", type=float, default=1800.0)
     show = sub.add_parser("show", help="print a stored investigation")
     show.add_argument("id")
+    serve = sub.add_parser("serve", help="run the local web UI and API")
+    serve.add_argument(
+        "--host", default=None, help="bind address (default $REHUB_HOST or 127.0.0.1)"
+    )
+    serve.add_argument("--port", type=int, default=None, help="port (default $REHUB_PORT or 8080)")
     return parser
 
 
@@ -48,6 +54,15 @@ def main(argv: Sequence[str] | None = None, execute: Executor = subprocess_execu
     parser = build_parser()
     args = parser.parse_args(argv)
     data = Path(args.data).expanduser()
+    if args.command == "serve":
+        config = Config.from_env(data)
+        if args.host:
+            config.host = args.host
+        if args.port is not None:
+            config.port = args.port
+        data.mkdir(parents=True, exist_ok=True)
+        serve(config, execute)
+        return 0
     if args.command == "show":
         record = load_record(data, args.id)
         if record is None:
