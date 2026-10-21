@@ -62,6 +62,22 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.4
+  landing-heading:
+    fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 650
+    lineHeight: 1.2
+    letterSpacing: "-0.02em"
+  landing-lede:
+    fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1.375rem"
+    fontWeight: 500
+    lineHeight: 1.5
+  landing-small:
+    fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
+    fontSize: "0.95rem"
+    fontWeight: 400
+    lineHeight: 1.6
   map-label:
     fontFamily: "system-ui, -apple-system, Segoe UI, Helvetica Neue, Arial, sans-serif"
     fontSize: "10.5px"
@@ -163,6 +179,7 @@ A fixed rem scale (no fluid type) with a ~1.2 step: 0.8 / 0.875 / 1 / 1.1875 / 1
 - **Title** (650, 1.1875rem): section headings and finding titles.
 - **Body** (400, 1rem): running text.
 - **Label** (500, 0.875rem): table headers, meta lines, chips.
+- **Landing page** (public site only, `site/`): body 1.0625rem, lede and the briefing answer 1.375rem (500), section headings 1.75rem (650), small text 0.95rem, wordmark as above. The same family, colours and outlines as the product; only the scale is larger because the page is read, not operated.
 - **Map label** (400, 10.5px): node captions and edge labels inside the SVG flow map only.
 - **Data** (mono, 0.875rem): IPs, hashes, code lines, packet fields; tabular numerals.
 

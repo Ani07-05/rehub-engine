@@ -46,6 +46,10 @@ It starts two containers from `compose.yml`:
 
 Then it runs the doctor, prints the address and opens it. Also: `install.sh --update`, `--status`, `--uninstall [--purge]`, `--port N`, `--auth`.
 
+## Landing page
+
+`site/` is a static landing page (plain HTML, CSS and one small script, strict CSP, light and dark). `vercel.json` publishes it with `install.sh` served as plain text next to it, so the one-line install can come from the page's own address. Preview it with `./scripts/preview-site.sh`. To deploy: create a new Vercel project from this repository (the root directory stays the repo root; `vercel.json` sets the build and output). The page's install command adapts to the origin it is served from.
+
 ## Use it
 
 Open http://localhost:8080. A REHUB screen checks Storage, Zeek, Suricata and tshark (including a self-test on a built-in capture), then you press Enter. On the start page, drop evidence or press **Try the demo** for a built-in pump station case with a rogue device.
@@ -91,6 +95,7 @@ src/rehub/
   gateway.py             tiny TCP forwarder used by the compose stack
   ui/                    web UI: plain HTML, CSS and JS, no build step
 docker/ compose.yml      tool image and hardened stack
+site/ vercel.json        landing page and its deployment config
 fixtures/                synthetic OT capture, real tool output, PLC projects
 samples/                 one file of each evidence type to try uploading
 PRODUCT.md DESIGN.md     product context and design system

@@ -1,0 +1,1 @@
+Screenshots of the real ReHub web UI (dark and light themes) analyzing the built-in synthetic demo case (samples/capture/ot-demo.pcap with samples/plc/pump.st). Captured with headless Chrome at 1280 px wide and converted to WebP. No stock or generated imagery.

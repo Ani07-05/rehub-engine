@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 .vercel/
 /data/
+
+# built by vercel.json from scripts/install.sh
+site/install.sh

@@ -39,6 +39,10 @@ Evidence sniffer and safe ingest, tool runners and image, Zeek/Suricata/tshark a
 
 Loopback bind by default, Host allowlist (DNS rebinding), `X-Rehub` header and Origin check on every mutation. Sign-in is OPT-IN (the user chose no token for a local tool): `REHUB_TOKEN`, `REHUB_AUTH=1` or `rehub serve --auth` turn on a per-install token (`<data>/.token`, mode 0600) exchanged for an HttpOnly SameSite=Strict cookie then redirected, Bearer header for scripts, 5 failures per minute lockout. `rehub token [--rotate]` prints the sign-in link. With sign-in off, any local process that can reach the port can use ReHub, so the installer must publish the port on 127.0.0.1 only. `/api/health` is always public.
 
+## Landing page
+
+`site/index.html` (built to the `.impeccable/surfaces/site-index-html.md` contract: incident briefing structure, v1's trust sections). `scripts/install.sh` is now one self-contained file (compose embedded by `scripts/embed-compose.py`; a test keeps it equal to `compose.yml`). Before announcing the one-line install: make the repository public, let CI publish `ghcr.io/ani07-05/rehub-engine` and make that package public, deploy `site/` (new Vercel project; do not reuse the v1 project), then remove the pre-release notes from the page. Screenshots are real UI captures of the synthetic demo case (`site/img/PROVENANCE.md`).
+
 ## Known limits
 
 - `correlate` holds all events in memory; very large captures will hurt.

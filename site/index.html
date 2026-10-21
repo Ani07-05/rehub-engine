@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>ReHub - OT investigations that run on your own machine</title>
+<meta name="description" content="Drop in OT evidence and get an investigation you can explain. ReHub runs Zeek, Suricata and tshark locally, joins them with your PLC logic, and answers in plain language first.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="/theme-init.js"></script>
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip" href="#install">Skip to install</a>
+
+<header class="top">
+  <div class="top-in">
+    <span class="top-name">ReHub</span>
+    <span class="grow"></span>
+    <a class="top-link" href="https://github.com/Ani07-05/rehub-engine">GitHub</a>
+    <button class="btn ghost iconbtn" id="theme" type="button" aria-label="Switch to light mode"></button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 class="wordmark">REHUB</h1>
+    <p class="lede">Drop in OT evidence. Get an investigation you can explain. It runs on your own machine and sends nothing out.</p>
+    <div class="hero-cmd">
+      <div class="cmd"><pre><code id="cmd-hero">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh</code></pre><button class="btn small" type="button" data-copy="cmd-hero">Copy</button></div>
+      <p class="note"><b>Pre-release.</b> The one line works once the repository is public and the image is published. Until then, <a href="#install">build it from source</a>. Needs Docker.</p>
+    </div>
+  </section>
+
+  <section class="briefing" aria-labelledby="what">
+    <div class="briefing-text">
+      <h2 id="what">What happened</h2>
+      <p class="answer">10.0.0.66 (unidentified device) sent a PLC stop command to 10.0.0.30 (Siemens AG controller) and 2 register write commands to 10.0.0.20 (Telemecanique Electrique controller, pump program).</p>
+      <p class="answer">Two independent tools agree on all of them.</p>
+      <p class="answer">In the pump PLC program these writes change Setpoint, PumpSpeed and SpeedLimit, which feed ReliefValve and PumpRun.</p>
+      <p class="note">Written by ReHub from a synthetic demo capture and a sample PLC program that ship with it. Your evidence stays on your machine.</p>
+    </div>
+    <figure class="frame">
+      <img class="only-dark" src="/img/summary-dark.webp" width="1280" height="1080" alt="The ReHub Summary screen for the demo case: the plain-language answer, key detections with tool lanes, and the five-stage flow.">
+      <img class="only-light" src="/img/summary-light.webp" width="1280" height="1080" alt="The same Summary screen in the light theme." loading="lazy">
+      <figcaption>The Summary screen. The answer comes first; every sentence opens down to its evidence.</figcaption>
+    </figure>
+  </section>
+
+  <section class="install" id="install" aria-labelledby="get">
+    <h2 id="get">Get it</h2>
+    <div class="tabs" role="tablist" aria-label="Install method">
+      <button class="tab" role="tab" id="tab-one" aria-controls="panel-one" aria-selected="true" type="button">One line</button>
+      <button class="tab" role="tab" id="tab-src" aria-controls="panel-src" aria-selected="false" tabindex="-1" type="button">From source</button>
+    </div>
+    <div class="panel" role="tabpanel" id="panel-one" aria-labelledby="tab-one">
+      <div class="cmd"><pre><code id="cmd-one">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh | sh</code></pre><button class="btn small" type="button" data-copy="cmd-one">Copy</button></div>
+    </div>
+    <div class="panel" role="tabpanel" id="panel-src" aria-labelledby="tab-src" hidden>
+      <div class="cmd"><pre><code id="cmd-src">git clone https://github.com/Ani07-05/rehub-engine
+cd rehub-engine
+./scripts/install.sh --local</code></pre><button class="btn small" type="button" data-copy="cmd-src">Copy</button></div>
+    </div>
+    <p class="status" id="copied" role="status"></p>
+    <p class="note"><b>Pre-release.</b> The one-line install works once the repository is public and the image is published. Until then, use From source, which builds the image on your machine (a few minutes the first time). Needs Docker with Compose v2.</p>
+  </section>
+
+  <section class="block" aria-labelledby="knows">
+    <h2 id="knows">How ReHub knows</h2>
+    <p class="lead">Every detection shows which tools saw it. Zeek saw the protocol action, Suricata matched a rule, tshark holds the packets, and your PLC program shows what the command touched. Agreement between independent tools is the confidence, and a detection only one tool reported is labelled that way.</p>
+    <figure class="frame">
+      <img class="only-dark" src="/img/detail-dark.webp" width="1280" height="1000" alt="A detection in ReHub: tool lanes converging on a Modbus register write, with its effect on the PLC program and the evidence behind it." loading="lazy">
+      <img class="only-light" src="/img/detail-light.webp" width="1280" height="1000" alt="The same detection view in the light theme." loading="lazy">
+      <figcaption>A register write traced to the PLC variable it overlaps, the logic that reads it and the output it drives. The address mapping is shown as an assumption, not a fact.</figcaption>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="flow">
+    <h2 id="flow">What happens to your files</h2>
+    <p class="lead">One path for every upload. Each stage answers one question and feeds the next.</p>
+    <figure class="engine" aria-label="Evidence goes through Zeek, Suricata and tshark, then the ReHub engine, then five stages.">
+      <div class="eg-box eg-input"><b>PCAP / OT evidence</b><span>One upload, one investigation</span></div>
+      <div class="eg-arrow" aria-hidden="true"></div>
+      <div class="eg-tools">
+        <div class="eg-box"><b>Zeek</b><span>Protocol actions</span></div>
+        <div class="eg-box"><b>Suricata</b><span>Rule alerts</span></div>
+        <div class="eg-box"><b>tshark</b><span>Packet details</span></div>
+      </div>
+      <div class="eg-arrow" aria-hidden="true"></div>
+      <div class="eg-box eg-engine"><b>ReHub engine</b><span>Normalize, link evidence, keep tool attribution</span></div>
+      <div class="eg-arrow" aria-hidden="true"></div>
+      <ol class="eg-stages">
+        <li class="eg-box"><b>Assets</b><span>What devices are on this network?</span></li>
+        <li class="eg-box"><b>Communication</b><span>Who talks to whom?</span></li>
+        <li class="eg-box"><b>Detections</b><span>What looks wrong?</span></li>
+        <li class="eg-box"><b>Evidence</b><span>What proves it?</span></li>
+        <li class="eg-box"><b>Report</b><span>What do I hand to others?</span></li>
+      </ol>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="report">
+    <h2 id="report">Something you can hand to someone</h2>
+    <p class="lead">The report prints to PDF or downloads as one HTML file with no scripts. It lists every detection with its evidence, what could not be verified, and a chain of custody with the SHA-256 of every file.</p>
+    <figure class="frame">
+      <img class="only-dark" src="/img/report-dark.webp" width="1280" height="1000" alt="The ReHub report: summary, detections with evidence references and tool agreement." loading="lazy">
+      <img class="only-light" src="/img/report-light.webp" width="1280" height="1000" alt="The same report in the light theme." loading="lazy">
+      <figcaption>The Report tab. Print to PDF or download a standalone file.</figcaption>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="local">
+    <h2 id="local">Local by design</h2>
+    <p class="lead">Checked on the running installation, not just intended:</p>
+    <ul class="facts">
+      <li><b>The engine has no way out.</b> It parses your files on a network with no route out. From inside it, reaching the internet fails with "Network is unreachable" and names do not resolve.</li>
+      <li><b>One door, on this machine only.</b> A small gateway forwards the web UI and publishes it on 127.0.0.1. The engine publishes no ports.</li>
+      <li><b>Locked down.</b> Read-only root filesystem, every Linux capability dropped, no new privileges, memory and process limits.</li>
+      <li><b>Hostile files handled as hostile.</b> Evidence is only ever served as a download, never shown as a page. File-derived text is never treated as HTML. PLC XML with entity declarations is rejected. Archives have size and file-count limits.</li>
+      <li><b>No telemetry, no cloud.</b> Sign-in is off by default because it is local only; one flag turns on an access token.</li>
+    </ul>
+  </section>
+
+  <section class="block" aria-labelledby="cmd">
+    <h2 id="cmd">What the install command does</h2>
+    <div class="cols">
+      <div>
+        <h3>It does</h3>
+        <ol class="steps">
+          <li>Checks that Docker and Compose v2 are installed and running.</li>
+          <li>Writes two files into <code>~/.rehub</code>: <code>compose.yml</code> and <code>.env</code>.</li>
+          <li>Starts two containers and waits until both are healthy.</li>
+          <li>Runs a self-test: Zeek, Suricata and tshark on a built-in capture, checking the expected Modbus write is found.</li>
+          <li>Prints the address and opens it.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>It touches</h3>
+        <ul class="plain">
+          <li><code>~/.rehub</code> (the two files)</li>
+          <li>Docker containers <code>rehub-engine-1</code> and <code>rehub-gateway-1</code></li>
+          <li>Docker networks <code>rehub_internal</code> and <code>rehub_edge</code></li>
+          <li>Docker volume <code>rehub_rehub-data</code> (your investigations)</li>
+          <li>The image <code>ghcr.io/ani07-05/rehub-engine</code></li>
+        </ul>
+        <p class="note">No sudo. No changes to your PATH or shell profile. Nothing outside Docker and that one folder.</p>
+      </div>
+    </div>
+    <h3>Read it first</h3>
+    <p class="lead">The installer is one short file with the compose file inside it. Download it, read it, then run it. To pin an exact version, replace <code>main</code> in the address with a tag or commit.</p>
+    <div class="cmd"><pre><code id="cmd-read">curl -fsSL https://raw.githubusercontent.com/Ani07-05/rehub-engine/main/scripts/install.sh -o install.sh
+less install.sh
+sh install.sh</code></pre><button class="btn small" type="button" data-copy="cmd-read">Copy</button></div>
+    <h3>Remove it</h3>
+    <div class="cmd"><pre><code id="cmd-rm">sh install.sh --uninstall           # stop it, keep your investigations
+sh install.sh --uninstall --purge   # also delete them</code></pre><button class="btn small" type="button" data-copy="cmd-rm">Copy</button></div>
+  </section>
+
+  <section class="block" aria-labelledby="honest">
+    <h2 id="honest">What it is not</h2>
+    <ul class="plain">
+      <li>It does not capture live traffic. It analyzes files you give it.</li>
+      <li>It does not give verdicts. ATT&amp;CK for ICS techniques are candidates, because a capture cannot show whether a command was authorized.</li>
+      <li>It does not yet read every file type. Syslog, CSV asset and historian exports and tshark JSON are stored and hashed, and listed as not analyzed.</li>
+      <li>It is tested on macOS (Apple silicon) with Docker Desktop and on real public Modbus, S7 and DNP3 captures. Linux is expected to work and Windows (WSL) is untested.</li>
+    </ul>
+    <h3>Pinned tools</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>Zeek</td><td class="mono">8.0.10</td><td>Protocol logs</td></tr>
+        <tr><td>CISA ICSNPP S7comm and EtherNet/IP</td><td class="mono">pinned commits</td><td>Industrial protocol parsers for Zeek</td></tr>
+        <tr><td>Suricata</td><td class="mono">8.0.7</td><td>Rule-based detection</td></tr>
+        <tr><td>tshark</td><td class="mono">4.4.19</td><td>Per-packet detail</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <span><b>ReHub</b> is open source under the MIT license.</span>
+    <span class="grow"></span>
+    <a href="https://github.com/Ani07-05/rehub-engine">Source on GitHub</a>
+  </div>
+</footer>
+
+<script src="/js/site.js" defer></script>
+</body>
+</html>
