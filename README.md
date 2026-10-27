@@ -19,17 +19,25 @@ Status: work in progress, aimed at Black Hat Arsenal. Engine, CLI, web UI, repor
 
 ## How it works
 
+```mermaid
+flowchart LR
+    E["Evidence<br/>pcap, Zeek logs, eve.json,<br/>PLC projects"] --> Z["Zeek<br/>protocol actions"]
+    E --> S["Suricata<br/>rule alerts"]
+    E --> T["tshark<br/>packet details"]
+    E --> P["PLC logic<br/>static analysis"]
+    Z --> R["ReHub engine<br/>normalize, correlate,<br/>keep tool attribution"]
+    S --> R
+    T --> R
+    P --> R
+    R --> I["Investigation<br/>Assets, Communication,<br/>Detections, Evidence, Report"]
 ```
-PCAP / OT evidence
-        |
-  Zeek      Suricata      tshark      PLC logic
-  (protocol (rule         (packet     (ST, PLCopen
-   actions)  alerts)       details)    XML, L5X)
-        |
-  ReHub engine: normalize, link evidence, keep tool attribution
-        |
-  Assets > Communication > Detections > Evidence > Report
-```
+
+1. **Ingest.** Files are identified by content, fingerprinted (SHA-256) and stored by hash. Bundles are unpacked with bomb limits.
+2. **Run the tools.** Zeek, Suricata and tshark run on the capture, inside the offline container.
+3. **Normalize.** Each tool's output becomes one common event schema, tagged with the tool and the file it came from.
+4. **Correlate.** Events are merged by flow (Community ID) and Modbus transaction id, so one command seen by two tools is one detection with two witnesses.
+5. **Join the PLC logic.** Register writes are matched to PLC variables, the logic that reads them and the outputs they drive.
+6. **Explain.** Plain-language answer first, then every claim links back to the file, line and packets behind it.
 
 ## What you get
 
