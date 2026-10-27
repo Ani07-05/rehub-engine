@@ -4,7 +4,7 @@ Handoff notes so work can resume on any machine.
 
 ## Goal
 
-Black Hat Arsenal tool: drop in OT evidence, get an investigation (assets, communication, detections, evidence, report), fully local. Reported Arsenal Asia call close: 2026-11-02 (third-party date, verify on the official CFP page). Arsenal needs open source, no sales pitch, 3+ pages of docs, a demo that works without real hardware.
+Black Hat Arsenal tool: drop in OT evidence, get an investigation (assets, communication, detections, evidence, report), fully local. Arsenal Asia 2027 call closes 2026-11-02, notification 2026-12-01 (verified on the official Call for Tools page; closes 23:59 Singapore time; Arsenal days 2027-03-02 and 03-03, Singapore). Submission kit: `docs/ARSENAL.md`. Arsenal needs open source, no sales pitch, 3+ pages of docs, a demo that works without real hardware.
 
 ## Why this is different
 

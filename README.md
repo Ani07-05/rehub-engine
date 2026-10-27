@@ -48,7 +48,7 @@ Then it runs the doctor, prints the address and opens it. Also: `install.sh --up
 
 ## Docs
 
-`site/docs/` holds the documentation pages (overview, install, usage, reference, how it works) with real screenshots, published at https://rehub-engine.vercel.app/docs/.
+`site/docs/` holds the documentation pages (overview, install, usage, reference, how it works) with real screenshots, published at https://rehub-engine.vercel.app/docs/. Arsenal submission text, demo script and checklist: `docs/ARSENAL.md`.
 
 ## Landing page
 
