@@ -1,0 +1,1215 @@
+{
+ "created": "2026-10-30T18:48:15.959548+00:00",
+ "engine_version": "0.2.0",
+ "evidence": [
+  {
+   "compressed": false,
+   "kind": "pcap",
+   "name": "ot-demo.pcap",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "size": 7979
+  },
+  {
+   "compressed": false,
+   "kind": "plc_st",
+   "name": "pump.st",
+   "origin": "pump.st",
+   "origin_sha256": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+   "sha256": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+   "size": 743
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/conn.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+   "size": 2689
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/cotp.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "b62e970bccf56aeab258d0114769308cdd1dd5821e81dfaaf7962effe98ff0d3",
+   "size": 543
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/modbus.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+   "size": 6277
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/modbus_detailed.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+   "size": 3973
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/packet_filter.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "7bbc1c8f0063e185c9baee9afc439255db779d402b86de04da179fc9ef6e94b5",
+   "size": 90
+  },
+  {
+   "compressed": false,
+   "kind": "zeek_log",
+   "name": "zeek/s7comm.log",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "6cbfd7bf0e22e14f9ddc2962413798bcdbf70d16d25bb7ab6eacdb7f1598931c",
+   "size": 346
+  },
+  {
+   "compressed": false,
+   "kind": "suricata_eve",
+   "name": "suricata/eve.json",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+   "size": 16463
+  },
+  {
+   "compressed": false,
+   "kind": "tshark_tsv",
+   "name": "tshark/packets.tsv",
+   "origin": "ot-demo.pcap",
+   "origin_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "sha256": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+   "size": 17226
+  }
+ ],
+ "id": "0d8d20e56763",
+ "investigation": {
+  "assets": {
+   "10.0.0.10": {
+    "first_ts": 1760000000.01,
+    "id": "10.0.0.10",
+    "ips": [
+     "10.0.0.10"
+    ],
+    "kind": "client",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": false,
+    "macs": {
+     "00:1b:1b:00:00:10": "arp"
+    },
+    "plc_projects": [],
+    "roles": [
+     "modbus_client"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": "Siemens AG"
+   },
+   "10.0.0.20": {
+    "first_ts": 1760000000.01,
+    "id": "10.0.0.20",
+    "ips": [
+     "10.0.0.20"
+    ],
+    "kind": "controller",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": false,
+    "macs": {
+     "00:80:f4:00:00:20": "arp"
+    },
+    "plc_projects": [
+     "pump"
+    ],
+    "roles": [
+     "modbus_server"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": "Telemecanique Electrique (Schneider Electric)"
+   },
+   "10.0.0.30": {
+    "first_ts": 1760000006.01,
+    "id": "10.0.0.30",
+    "ips": [
+     "10.0.0.30"
+    ],
+    "kind": "controller",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": false,
+    "macs": {
+     "00:1b:1b:00:00:30": "arp"
+    },
+    "plc_projects": [],
+    "roles": [
+     "s7comm_server"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": "Siemens AG"
+   },
+   "10.0.0.66": {
+    "first_ts": 1760000002.01,
+    "id": "10.0.0.66",
+    "ips": [
+     "10.0.0.66"
+    ],
+    "kind": "client",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": true,
+    "macs": {
+     "02:00:00:00:00:66": "arp"
+    },
+    "plc_projects": [],
+    "roles": [
+     "modbus_client",
+     "s7comm_client"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": null
+   },
+   "172.16.0.5": {
+    "first_ts": 1760000008.01,
+    "id": "172.16.0.5",
+    "ips": [
+     "172.16.0.5"
+    ],
+    "kind": "client",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": false,
+    "macs": {},
+    "plc_projects": [],
+    "roles": [
+     "modbus_client"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": null
+   },
+   "172.16.0.6": {
+    "first_ts": 1760000009.01,
+    "id": "172.16.0.6",
+    "ips": [
+     "172.16.0.6"
+    ],
+    "kind": "client",
+    "last_ts": 1760000009.14,
+    "locally_administered_mac": false,
+    "macs": {},
+    "plc_projects": [],
+    "roles": [
+     "modbus_client"
+    ],
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ],
+    "vendor": null
+   }
+  },
+  "caveats": [
+   "MAC 00:00:0c:07:ac:01 is shared by 2 IPs (172.16.0.5, 172.16.0.6): it may be a gateway, a proxy or one machine with several addresses, so no vendor is attributed to those hosts from it."
+  ],
+  "detections": [
+   {
+    "attack": [
+     "T0858 Change Operating Mode"
+    ],
+    "attrs": {
+     "category": ""
+    },
+    "corroborated": true,
+    "count": 3,
+    "dst": "10.0.0.30",
+    "first_ts": 1760000006.04,
+    "flow_key": "1:uIO9De9gP7hpt19a2/IibC2b57w=",
+    "id": "3f299d5b7ec1",
+    "last_ts": 1760000006.08,
+    "plc": [],
+    "refs": [
+     {
+      "evidence_id": "6cbfd7bf0e22e14f9ddc2962413798bcdbf70d16d25bb7ab6eacdb7f1598931c",
+      "ref": "zeek/s7comm.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L3",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L4",
+      "tool": "suricata"
+     }
+    ],
+    "rules": [
+     "control:s7comm",
+     "suricata:9000003"
+    ],
+    "severity": "high",
+    "sources": [
+     {
+      "rule": "control:s7comm",
+      "title": "S7comm PLC Stop",
+      "tool": "zeek"
+     },
+     {
+      "rule": "suricata:9000003",
+      "title": "REHUB S7comm PLC stop",
+      "tool": "suricata"
+     }
+    ],
+    "src": "10.0.0.66",
+    "title": "S7comm PLC Stop",
+    "tools": [
+     "suricata",
+     "zeek"
+    ],
+    "writes": []
+   },
+   {
+    "attack": [],
+    "attrs": {
+     "detail": "`PumpRun := FALSE` under Runtime > 4000000. Counter or time-gated output writes can be dormant logic. Review hint from static analysis, not a verdict.",
+     "project": "pump",
+     "variable": "PumpRun"
+    },
+    "corroborated": false,
+    "count": 1,
+    "dst": "10.0.0.20",
+    "first_ts": null,
+    "flow_key": null,
+    "id": "1aedb2ea63b2",
+    "last_ts": null,
+    "plc": [],
+    "refs": [
+     {
+      "evidence_id": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+      "ref": "pump.st:PumpControl:27",
+      "tool": "plc"
+     }
+    ],
+    "rules": [
+     "plc:gated_output_write"
+    ],
+    "severity": "medium",
+    "sources": [
+     {
+      "rule": "plc:gated_output_write",
+      "title": "PLC logic: Output PumpRun gated by counter/timer Runtime",
+      "tool": "plc"
+     }
+    ],
+    "src": null,
+    "title": "PLC logic: Output PumpRun gated by counter/timer Runtime",
+    "tools": [
+     "plc"
+    ],
+    "writes": []
+   },
+   {
+    "attack": [
+     "T0855 Unauthorized Command Message",
+     "T0836 Modify Parameter"
+    ],
+    "attrs": {
+     "address": "10",
+     "category": "",
+     "func": "WRITE_SINGLE_REGISTER",
+     "modbus.request.function_raw": "6",
+     "modbus.request.write.address": "10",
+     "modbus.request.write.data": "1000",
+     "quantity": "1",
+     "request_values": "[1000]"
+    },
+    "corroborated": true,
+    "count": 2,
+    "dst": "10.0.0.20",
+    "first_ts": 1760000002.04,
+    "flow_key": "1:USZ2Jpsx+Xpp8j7Miz2Fh/jFR7k=",
+    "id": "fa84ca3deff6",
+    "last_ts": 1760000002.07,
+    "plc": [
+     {
+      "address": "%MW10",
+      "assumption": "Assumes Modbus wire address N maps to %MW N (Schneider M580 and CODESYS default). Verify against the device's Modbus configuration.",
+      "comment": "",
+      "drives": [
+       "ReliefValve"
+      ],
+      "dtype": "INT",
+      "new_values": "[1000]",
+      "project": "pump",
+      "readers": [
+       "PumpControl:20: when Pressure > Setpoint: ReliefValve := TRUE",
+       "PumpControl:22: when NOT (Pressure > Setpoint): ReliefValve := FALSE"
+      ],
+      "size_known": true,
+      "variable": "Setpoint"
+     }
+    ],
+    "refs": [
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L11",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L1",
+      "tool": "suricata"
+     }
+    ],
+    "rules": [
+     "control:modbus",
+     "suricata:9000001"
+    ],
+    "severity": "medium",
+    "sources": [
+     {
+      "rule": "control:modbus",
+      "title": "Modbus WRITE_SINGLE_REGISTER",
+      "tool": "zeek"
+     },
+     {
+      "rule": "suricata:9000001",
+      "title": "REHUB Modbus write single register",
+      "tool": "suricata"
+     }
+    ],
+    "src": "10.0.0.66",
+    "title": "Modbus WRITE_SINGLE_REGISTER",
+    "tools": [
+     "suricata",
+     "zeek"
+    ],
+    "writes": [
+     {
+      "address": 10,
+      "code": 6,
+      "count": 1,
+      "kind": "register",
+      "op": "set",
+      "quantity": 1,
+      "seen": {
+       "suricata": 1,
+       "zeek": 1
+      },
+      "values": [
+       "1000"
+      ]
+     }
+    ]
+   },
+   {
+    "attack": [
+     "T0855 Unauthorized Command Message",
+     "T0836 Modify Parameter"
+    ],
+    "attrs": {
+     "address": "0",
+     "category": "",
+     "func": "WRITE_MULTIPLE_REGISTERS",
+     "modbus.request.function_raw": "16",
+     "modbus.request.write.address": "0",
+     "modbus.request.write.data": "'\u0010'\u0010",
+     "modbus.request.write.quantity": "2",
+     "quantity": "2",
+     "request_values": "[10000, 10000]"
+    },
+    "corroborated": true,
+    "count": 2,
+    "dst": "10.0.0.20",
+    "first_ts": 1760000002.08,
+    "flow_key": "1:USZ2Jpsx+Xpp8j7Miz2Fh/jFR7k=",
+    "id": "499ac01fa35c",
+    "last_ts": 1760000002.11,
+    "plc": [
+     {
+      "address": "%MW0",
+      "assumption": "Assumes Modbus wire address N maps to %MW N (Schneider M580 and CODESYS default). Verify against the device's Modbus configuration.",
+      "comment": "",
+      "drives": [
+       "PumpRun"
+      ],
+      "dtype": "INT",
+      "new_values": "[10000, 10000]",
+      "project": "pump",
+      "readers": [
+       "PumpControl:24: PumpRun := PumpSpeed > 0 AND PumpSpeed <= SpeedLimit"
+      ],
+      "size_known": true,
+      "variable": "PumpSpeed"
+     },
+     {
+      "address": "%MW1",
+      "assumption": "Assumes Modbus wire address N maps to %MW N (Schneider M580 and CODESYS default). Verify against the device's Modbus configuration.",
+      "comment": "",
+      "drives": [
+       "PumpRun"
+      ],
+      "dtype": "INT",
+      "new_values": "[10000, 10000]",
+      "project": "pump",
+      "readers": [
+       "PumpControl:24: PumpRun := PumpSpeed > 0 AND PumpSpeed <= SpeedLimit"
+      ],
+      "size_known": true,
+      "variable": "SpeedLimit"
+     }
+    ],
+    "refs": [
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L13",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L2",
+      "tool": "suricata"
+     }
+    ],
+    "rules": [
+     "control:modbus",
+     "suricata:9000002"
+    ],
+    "severity": "medium",
+    "sources": [
+     {
+      "rule": "control:modbus",
+      "title": "Modbus WRITE_MULTIPLE_REGISTERS",
+      "tool": "zeek"
+     },
+     {
+      "rule": "suricata:9000002",
+      "title": "REHUB Modbus write multiple registers",
+      "tool": "suricata"
+     }
+    ],
+    "src": "10.0.0.66",
+    "title": "Modbus WRITE_MULTIPLE_REGISTERS",
+    "tools": [
+     "suricata",
+     "zeek"
+    ],
+    "writes": [
+     {
+      "address": 0,
+      "code": 16,
+      "count": 1,
+      "kind": "register",
+      "op": "set",
+      "quantity": 2,
+      "seen": {
+       "suricata": 1,
+       "zeek": 1
+      },
+      "values": [
+       "10000",
+       "10000"
+      ]
+     }
+    ]
+   },
+   {
+    "attack": [],
+    "attrs": {
+     "detail": "Declared but never referenced.",
+     "project": "pump",
+     "variable": "UnusedDiag"
+    },
+    "corroborated": false,
+    "count": 1,
+    "dst": "10.0.0.20",
+    "first_ts": null,
+    "flow_key": null,
+    "id": "4c16eb0b5de5",
+    "last_ts": null,
+    "plc": [],
+    "refs": [
+     {
+      "evidence_id": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+      "ref": "pump.st:UnusedDiag line 9",
+      "tool": "plc"
+     }
+    ],
+    "rules": [
+     "plc:unused_variable"
+    ],
+    "severity": "low",
+    "sources": [
+     {
+      "rule": "plc:unused_variable",
+      "title": "PLC logic: Unused variable UnusedDiag",
+      "tool": "plc"
+     }
+    ],
+    "src": null,
+    "title": "PLC logic: Unused variable UnusedDiag",
+    "tools": [
+     "plc"
+    ],
+    "writes": []
+   },
+   {
+    "attack": [],
+    "attrs": {
+     "detail": "Writers: PumpControl:24, PumpControl:27. Later writes override earlier ones within a scan. Review hint from static analysis, not a verdict.",
+     "project": "pump",
+     "variable": "PumpRun"
+    },
+    "corroborated": false,
+    "count": 1,
+    "dst": "10.0.0.20",
+    "first_ts": null,
+    "flow_key": null,
+    "id": "942fdf645ac0",
+    "last_ts": null,
+    "plc": [],
+    "refs": [
+     {
+      "evidence_id": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+      "ref": "pump.st:PumpControl:24",
+      "tool": "plc"
+     }
+    ],
+    "rules": [
+     "plc:multiple_writers"
+    ],
+    "severity": "low",
+    "sources": [
+     {
+      "rule": "plc:multiple_writers",
+      "title": "PLC logic: PumpRun is written from 2 places",
+      "tool": "plc"
+     }
+    ],
+    "src": null,
+    "title": "PLC logic: PumpRun is written from 2 places",
+    "tools": [
+     "plc"
+    ],
+    "writes": []
+   },
+   {
+    "attack": [],
+    "attrs": {
+     "detail": "Memory word reachable over fieldbus but no program logic reads or writes it. Review hint from static analysis, not a verdict.",
+     "project": "pump",
+     "variable": "SpareWord"
+    },
+    "corroborated": false,
+    "count": 1,
+    "dst": "10.0.0.20",
+    "first_ts": null,
+    "flow_key": null,
+    "id": "c347b1a3eff1",
+    "last_ts": null,
+    "plc": [],
+    "refs": [
+     {
+      "evidence_id": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+      "ref": "pump.st:SpareWord line 10",
+      "tool": "plc"
+     }
+    ],
+    "rules": [
+     "plc:mapped_but_unreferenced"
+    ],
+    "severity": "low",
+    "sources": [
+     {
+      "rule": "plc:mapped_but_unreferenced",
+      "title": "PLC logic: SpareWord (%MW20) is exposed but not used by logic",
+      "tool": "plc"
+     }
+    ],
+    "src": null,
+    "title": "PLC logic: SpareWord (%MW20) is exposed but not used by logic",
+    "tools": [
+     "plc"
+    ],
+    "writes": []
+   }
+  ],
+  "event_count": 82,
+  "flows": {
+   "1:+3Yz5sy0D0RdUKeyVO8wA5i/no8=": {
+    "dport": 502,
+    "dst": "10.0.0.20",
+    "first_frame": 81,
+    "first_ts": 1760000008.01,
+    "key": "1:+3Yz5sy0D0RdUKeyVO8wA5i/no8=",
+    "last_frame": 94,
+    "last_ts": 1760000009.14,
+    "packets": 14,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L4",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L25",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L26",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L27",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L28",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L13",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L14",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L8",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 81-94",
+      "tool": "tshark"
+     }
+    ],
+    "service": "modbus",
+    "sport": 42000,
+    "src": "172.16.0.5",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   },
+   "1:GpvtDDB5j5RGWhl+o7/mMi6Njuw=": {
+    "dport": 502,
+    "dst": "10.0.0.20",
+    "first_frame": 95,
+    "first_ts": 1760000009.01,
+    "key": "1:GpvtDDB5j5RGWhl+o7/mMi6Njuw=",
+    "last_frame": 108,
+    "last_ts": 1760000009.14,
+    "packets": 14,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L3",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L29",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L30",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L31",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L32",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L15",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L16",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L9",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 95-108",
+      "tool": "tshark"
+     }
+    ],
+    "service": "modbus",
+    "sport": 42001,
+    "src": "172.16.0.6",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   },
+   "1:USZ2Jpsx+Xpp8j7Miz2Fh/jFR7k=": {
+    "dport": 502,
+    "dst": "10.0.0.20",
+    "first_frame": 31,
+    "first_ts": 1760000002.01,
+    "key": "1:USZ2Jpsx+Xpp8j7Miz2Fh/jFR7k=",
+    "last_frame": 44,
+    "last_ts": 1760000009.14,
+    "packets": 14,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L2",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L11",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L12",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L13",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L14",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L6",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L7",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L1",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L2",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L10",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 31-44",
+      "tool": "tshark"
+     }
+    ],
+    "service": "modbus",
+    "sport": 40001,
+    "src": "10.0.0.66",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   },
+   "1:q4vlfFLGoPgyVdkpFdqFlNmvl5A=": {
+    "dport": 502,
+    "dst": "10.0.0.20",
+    "first_frame": 45,
+    "first_ts": 1760000004.01,
+    "key": "1:q4vlfFLGoPgyVdkpFdqFlNmvl5A=",
+    "last_frame": 70,
+    "last_ts": 1760000009.14,
+    "packets": 26,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L6",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L15",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L16",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L17",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L18",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L19",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L20",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L21",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L22",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L23",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L24",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L8",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L9",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L10",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L11",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L12",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L6",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 45-70",
+      "tool": "tshark"
+     }
+    ],
+    "service": "modbus",
+    "sport": 41001,
+    "src": "10.0.0.10",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   },
+   "1:qljYDK+vW1DIzLGMV8Ao77SzKbo=": {
+    "dport": 502,
+    "dst": "10.0.0.20",
+    "first_frame": 5,
+    "first_ts": 1760000000.01,
+    "key": "1:qljYDK+vW1DIzLGMV8Ao77SzKbo=",
+    "last_frame": 30,
+    "last_ts": 1760000009.14,
+    "packets": 26,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L2",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L3",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L4",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L5",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L6",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L7",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L8",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L9",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5d781d9258aea426a5c6c84646066fad84ae0a9acc8aeef80b39d4cf7ed257b5",
+      "ref": "zeek/modbus.log:L10",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L2",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L3",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L4",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5418db1d8ecd87c2bdc6c84470469b9ba83f77581b98bb435c54f2a820d78c0d",
+      "ref": "zeek/modbus_detailed.log:L5",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L7",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 5-30",
+      "tool": "tshark"
+     }
+    ],
+    "service": "modbus",
+    "sport": 41000,
+    "src": "10.0.0.10",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   },
+   "1:uIO9De9gP7hpt19a2/IibC2b57w=": {
+    "dport": 102,
+    "dst": "10.0.0.30",
+    "first_frame": 71,
+    "first_ts": 1760000006.01,
+    "key": "1:uIO9De9gP7hpt19a2/IibC2b57w=",
+    "last_frame": 80,
+    "last_ts": 1760000009.14,
+    "packets": 10,
+    "proto": "tcp",
+    "refs": [
+     {
+      "evidence_id": "4ab89bfe459a3d1080a3450f2e159b9c3c24a43a3453c90d115bc9a73681dfbe",
+      "ref": "zeek/conn.log:L5",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "b62e970bccf56aeab258d0114769308cdd1dd5821e81dfaaf7962effe98ff0d3",
+      "ref": "zeek/cotp.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "b62e970bccf56aeab258d0114769308cdd1dd5821e81dfaaf7962effe98ff0d3",
+      "ref": "zeek/cotp.log:L2",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "6cbfd7bf0e22e14f9ddc2962413798bcdbf70d16d25bb7ab6eacdb7f1598931c",
+      "ref": "zeek/s7comm.log:L1",
+      "tool": "zeek"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L3",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L4",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "5ce4121e66db2b791dbe651df2f668701bdbd4a264aef153c381f8a091e79b5e",
+      "ref": "suricata/eve.json:L5",
+      "tool": "suricata"
+     },
+     {
+      "evidence_id": "a63eaea410eb5c7b42a351ef7c6154cf49f6067bd1c121e5496ac44db89c1ef7",
+      "ref": "tshark/packets.tsv:frames 71-80",
+      "tool": "tshark"
+     }
+    ],
+    "service": "cotp,s7comm",
+    "sport": 40002,
+    "src": "10.0.0.66",
+    "tools": [
+     "suricata",
+     "tshark",
+     "zeek"
+    ]
+   }
+  }
+ },
+ "plc": [
+  {
+   "caveats": [],
+   "controller_ips": [
+    "10.0.0.20"
+   ],
+   "evidence_id": "45acdaa4c0343b295a4735db575010f6a1e7fbe2c99551247816eaeeaed6e1f1",
+   "format": "st",
+   "model": null,
+   "name": "pump",
+   "source": "pump.st",
+   "statements": 6,
+   "variables": 10
+  }
+ ],
+ "tool_runs": [
+  {
+   "error": "",
+   "ok": true,
+   "outputs": [
+    "zeek/conn.log",
+    "zeek/cotp.log",
+    "zeek/modbus.log",
+    "zeek/modbus_detailed.log",
+    "zeek/packet_filter.log",
+    "zeek/s7comm.log"
+   ],
+   "pcap": "ot-demo.pcap",
+   "pcap_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "seconds": 0.20705833299143706,
+   "tool": "zeek"
+  },
+  {
+   "error": "",
+   "ok": true,
+   "outputs": [
+    "suricata/eve.json"
+   ],
+   "pcap": "ot-demo.pcap",
+   "pcap_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "seconds": 0.04722391700488515,
+   "tool": "suricata"
+  },
+  {
+   "error": "",
+   "ok": true,
+   "outputs": [
+    "tshark/packets.tsv"
+   ],
+   "pcap": "ot-demo.pcap",
+   "pcap_sha256": "7d99898e4346249ae956f2877c567ca332a472f942f39bd43939f4ec8f678457",
+   "seconds": 0.06407762500748504,
+   "tool": "tshark"
+  }
+ ],
+ "warnings": []
+}

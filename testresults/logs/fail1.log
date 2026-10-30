@@ -1,0 +1,19 @@
+ingest
+correlate
+Investigation 34f45d324619  created 2026-10-30T18:48:16.343880+00:00
+
+Evidence (1)
+  ee20a8c67e0d  unknown              300  garbage.pcap
+
+Assets (0)
+
+Flows (0)
+
+Detections (0)
+
+Caveats and warnings
+  - No zeek evidence: correlation across tools is limited.
+  - No suricata evidence: correlation across tools is limited.
+  - No tshark evidence: correlation across tools is limited.
+  - garbage.pcap: unknown is stored but not analyzed yet.
+done

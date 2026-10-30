@@ -1,0 +1,11 @@
+  [ok  ] Data folder: /data is writable
+  [ok  ] Free disk space: 656.3 GB free
+  [ok  ] Zeek: version 8.0.10
+  [ok  ] Zeek industrial protocol plugins: S7comm and EtherNet/IP available
+  [ok  ] Suricata: version 8.0.7
+  [ok  ] tshark: version 4.4.19
+  [ok  ] Sign-in: off, local only. Set REHUB_TOKEN to require a token
+  [ok  ] Zeek reads a sample capture: found the Modbus write
+  [ok  ] Suricata raises an alert on a sample capture: the Modbus write rule fired
+  [ok  ] tshark lists the sample packets: packet list contains the Modbus conversation
+Startup check: ok

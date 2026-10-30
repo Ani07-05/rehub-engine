@@ -1,0 +1,24 @@
+== id
+uid=10001(rehub) gid=999(rehub) groups=999(rehub)
+== write to rootfs
+touch: cannot touch '/usr/x': Read-only file system
+rc=1
+== outbound network
+blocked: [Errno 101] Network is unreachable
+== interfaces
+    lo
+ tunl0
+  gre0
+gretap0
+erspan0
+ip_vti0
+ip6_vti0
+  sit0
+ip6tnl0
+ip6gre0
+== docker socket
+ls: cannot access '/var/run/docker.sock': No such file or directory
+== caps
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+NoNewPrivs:	1

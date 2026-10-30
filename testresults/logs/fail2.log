@@ -1,0 +1,36 @@
+ingest
+analyze: running tools on trunc.pcap
+correlate
+done
+Investigation 9ca4303379d5  created 2026-10-30T18:48:16.516878+00:00
+
+Evidence (2)
+  136e5b37d2cd  pcap                4000  trunc.pcap
+  fa995f317365  suricata_eve       13208  suricata/eve.json  <- trunc.pcap
+
+Tool runs
+  zeek      FAILED: zeek exited 1: 1760000004.100000 fatal error: failed to read a packet from /data/store/13/136e5b37d2cd08d2f9e19b6662baffb7cfcda8483c353a01b8ca50f3140ec5db: truncated dump file; tried to read 54 captured bytes, only got 0  (0.2s)
+  suricata  ok  (0.0s)
+  tshark    FAILED: tshark exited 2: tshark: The file "/data/store/13/136e5b37d2cd08d2f9e19b6662baffb7cfcda8483c353a01b8ca50f3140ec5db" appears to have been cut short in the middle of a packet.  (0.1s)
+
+Assets (3)
+  10.0.0.10        client     unknown vendor
+  10.0.0.20        controller unknown vendor
+  10.0.0.66        client     unknown vendor
+
+Flows (3)
+  10.0.0.66:40001 -> 10.0.0.20:502  tcp  modbus  0 pkts  [suricata]
+  10.0.0.10:41001 -> 10.0.0.20:502  tcp  modbus  0 pkts  [suricata]
+  10.0.0.10:41000 -> 10.0.0.20:502  tcp  modbus  0 pkts  [suricata]
+
+Detections (2)
+  [low] REHUB Modbus write single register  (suricata)
+      10.0.0.66 -> 10.0.0.20  x1  first 2025-10-09 08:53:22
+  [low] REHUB Modbus write multiple registers  (suricata)
+      10.0.0.66 -> 10.0.0.20  x1  first 2025-10-09 08:53:22
+
+Caveats and warnings
+  - No zeek evidence: correlation across tools is limited.
+  - No tshark evidence: correlation across tools is limited.
+  - zeek failed on trunc.pcap: zeek exited 1: 1760000004.100000 fatal error: failed to read a packet from /data/store/13/136e5b37d2cd08d2f9e19b6662baffb7cfcda8483c353a01b8ca50f3140ec5db: truncated dump file; tried to read 54 captured bytes, only got 0
+  - tshark failed on trunc.pcap: tshark exited 2: tshark: The file "/data/store/13/136e5b37d2cd08d2f9e19b6662baffb7cfcda8483c353a01b8ca50f3140ec5db" appears to have been cut short in the middle of a packet.

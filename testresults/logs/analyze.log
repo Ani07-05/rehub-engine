@@ -1,0 +1,60 @@
+ingest
+analyze: running tools on ot-demo.pcap
+correlate
+done
+Investigation ed4a783cdb1a  created 2026-10-30T18:48:05.687634+00:00
+
+Evidence (10)
+  7d99898e4346  pcap                7979  ot-demo.pcap
+  45acdaa4c034  plc_st               743  pump.st
+  0f4ea9b49ff3  zeek_log            2692  zeek/conn.log  <- ot-demo.pcap
+  0d61aa4cdb8e  zeek_log             545  zeek/cotp.log  <- ot-demo.pcap
+  a94154e6beab  zeek_log            6291  zeek/modbus.log  <- ot-demo.pcap
+  938e5b73e536  zeek_log            3980  zeek/modbus_detailed.log  <- ot-demo.pcap
+  48acdc83c1ef  zeek_log              90  zeek/packet_filter.log  <- ot-demo.pcap
+  db5b4e30ec05  zeek_log             347  zeek/s7comm.log  <- ot-demo.pcap
+  50e8cb710882  suricata_eve       16463  suricata/eve.json  <- ot-demo.pcap
+  a63eaea410eb  tshark_tsv         17226  tshark/packets.tsv  <- ot-demo.pcap
+
+Tool runs
+  zeek      ok  (0.2s)
+  suricata  ok  (0.0s)
+  tshark    ok  (0.1s)
+
+Assets (6)
+  10.0.0.10        client     Siemens AG
+  10.0.0.20        controller Telemecanique Electrique (Schneider Electric)
+  10.0.0.30        controller Siemens AG
+  10.0.0.66        client     locally administered MAC
+  172.16.0.5       client     unknown vendor
+  172.16.0.6       client     unknown vendor
+
+Flows (6)
+  10.0.0.10:41000 -> 10.0.0.20:502  tcp  modbus  26 pkts  [suricata, tshark, zeek]
+  10.0.0.66:40001 -> 10.0.0.20:502  tcp  modbus  14 pkts  [suricata, tshark, zeek]
+  10.0.0.10:41001 -> 10.0.0.20:502  tcp  modbus  26 pkts  [suricata, tshark, zeek]
+  10.0.0.66:40002 -> 10.0.0.30:102  tcp  cotp,s7comm  10 pkts  [suricata, tshark, zeek]
+  172.16.0.5:42000 -> 10.0.0.20:502  tcp  modbus  14 pkts  [suricata, tshark, zeek]
+  172.16.0.6:42001 -> 10.0.0.20:502  tcp  modbus  14 pkts  [suricata, tshark, zeek]
+
+Detections (7)
+  [high] S7comm PLC Stop  (suricata+zeek corroborated)
+      10.0.0.66 -> 10.0.0.30  x3  first 2025-10-09 08:53:26
+      ATT&CK candidates: T0858 Change Operating Mode
+  [medium] PLC logic: Output PumpRun gated by counter/timer Runtime  (plc)
+  [medium] Modbus WRITE_SINGLE_REGISTER  (suricata+zeek corroborated)
+      10.0.0.66 -> 10.0.0.20  x2  first 2025-10-09 08:53:22
+      ATT&CK candidates: T0855 Unauthorized Command Message, T0836 Modify Parameter
+  [medium] Modbus WRITE_MULTIPLE_REGISTERS  (suricata+zeek corroborated)
+      10.0.0.66 -> 10.0.0.20  x2  first 2025-10-09 08:53:22
+      ATT&CK candidates: T0855 Unauthorized Command Message, T0836 Modify Parameter
+  [low] PLC logic: Unused variable UnusedDiag  (plc)
+  [low] PLC logic: PumpRun is written from 2 places  (plc)
+  [low] PLC logic: SpareWord (%MW20) is exposed but not used by logic  (plc)
+
+Note: ATT&CK for ICS techniques are candidates inferred from observed behavior. Whether a command was unauthorized depends on context a capture cannot show.
+
+Caveats and warnings
+  - MAC 00:00:0c:07:ac:01 is shared by 2 IPs (172.16.0.5, 172.16.0.6): it may be a gateway, a proxy or one machine with several addresses, so no vendor is attributed to those hosts from it.
+  - PLC project pump has no controller IP, so it was not linked to any network asset. Provide the controller IP.
+./rh.sh analyze --plc-ip pump=10.0.0.20 /ev/ot-demo.pcap /ev/pump.st  0.01s user 0.01s system 4% cpu 0.414 total
